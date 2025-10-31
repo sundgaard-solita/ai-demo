@@ -1,0 +1,28 @@
+name: On New Issue
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  ack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log issue body
+        run: |
+          echo "${{ github.event.issue.body }}" > issue_body.txt
+          echo "Saved body to issue_body.txt"
+
+      - name: Comment acknowledgment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number,
+              body: "👋 Received. Workflow triggered and captured the issue body."
+            });
