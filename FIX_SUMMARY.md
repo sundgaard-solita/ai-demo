@@ -11,12 +11,12 @@ The workflow was using an incorrect API endpoint (`/orgs/{org}/models/inference`
 ### 1. Fixed API Endpoint (on_issue_created.yml)
 **Before:**
 ```
-/orgs/sundgaard-solita/models/inference
+/orgs/{org}/models/inference
 ```
 
 **After:**
 ```
-/orgs/sundgaard-solita/copilot/models/openai/gpt-4o/inference
+/orgs/{org}/copilot/models/openai/gpt-4o/inference
 ```
 
 **Additional improvements:**

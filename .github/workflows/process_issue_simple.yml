@@ -38,25 +38,34 @@ jobs:
           BODY='${{ steps.issue.outputs.ISSUE_BODY }}'
           
           # Try to extract plainTextContent from Teams JSON format
+          # Teams messages come in the format: [{"body":{"body":{"plainTextContent":"..."}}}]
           PLAIN_TEXT=$(echo "$BODY" | jq -r '.[0].body.body.plainTextContent // empty' 2>/dev/null || echo "")
           
           if [ -n "$PLAIN_TEXT" ]; then
-            # It's a Teams message JSON
+            # It's a Teams message JSON - extract additional metadata
             FROM=$(echo "$BODY" | jq -r '.[0].body.from.user.displayName // "Unknown User"' 2>/dev/null || echo "Unknown User")
             DATE=$(echo "$BODY" | jq -r '.[0].body.createdDateTime // ""' 2>/dev/null || echo "")
             
-            # Create formatted description using printf to avoid YAML issues
-            DESC=$(printf "## Message from Teams\n\n")
-            DESC="${DESC}$(printf "**From:** %s\n" "$FROM")"
-            DESC="${DESC}$(printf "**Date:** %s\n\n" "$DATE")"
-            DESC="${DESC}$(printf "### Content\n%s\n\n" "$PLAIN_TEXT")"
-            DESC="${DESC}$(printf -- "---\n")"
-            DESC="${DESC}$(printf "*This issue was automatically created from a Microsoft Teams message.*\n")"
-            
-            # Extract a title from the content (first line or first 50 chars)
-            TITLE=$(echo "$PLAIN_TEXT" | head -1 | cut -c1-50)
-            if [ ${#TITLE} -eq 50 ]; then
-              TITLE="${TITLE}..."
+            # Validate we have the essential data
+            if [ -z "$PLAIN_TEXT" ] || [ "$PLAIN_TEXT" == "null" ]; then
+              echo "⚠️  Warning: Could not extract text from Teams message"
+              echo "Using raw body as fallback"
+              DESC="$BODY"
+              TITLE="${{ steps.issue.outputs.ISSUE_TITLE }}"
+            else
+              # Create formatted description using printf to avoid YAML issues
+              DESC=$(printf "## Message from Teams\n\n")
+              DESC="${DESC}$(printf "**From:** %s\n" "$FROM")"
+              DESC="${DESC}$(printf "**Date:** %s\n\n" "$DATE")"
+              DESC="${DESC}$(printf "### Content\n%s\n\n" "$PLAIN_TEXT")"
+              DESC="${DESC}$(printf -- "---\n")"
+              DESC="${DESC}$(printf "*This issue was automatically created from a Microsoft Teams message.*\n")"
+              
+              # Extract a title from the content (first line or first 50 chars)
+              TITLE=$(echo "$PLAIN_TEXT" | head -1 | cut -c1-50)
+              if [ ${#TITLE} -eq 50 ]; then
+                TITLE="${TITLE}..."
+              fi
             fi
             
           else

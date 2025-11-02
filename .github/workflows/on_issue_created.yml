@@ -51,8 +51,10 @@ jobs:
           Original issue content to process:
           '
           
-          # Append the issue body to create the full prompt
-          FULL_PROMPT="${PROMPT}${ISSUE_BODY}"
+          # Append the issue body to create the full prompt (with spacing for readability)
+          FULL_PROMPT="${PROMPT}
+
+          ${ISSUE_BODY}"
           
           # Create request JSON using the correct API format
           # The endpoint expects: input field with the prompt text
@@ -118,7 +120,8 @@ jobs:
           fi
           
           # Extract the response content
-          # The response format should have the output in a specific field
+          # The response format varies by model - try common patterns
+          # Expected formats: .output, .text, or OpenAI-style .choices[0].message.content
           jq -r '.output // .text // .choices[0].message.content // empty' response.json > processed.txt
           
           if [ ! -s processed.txt ]; then
