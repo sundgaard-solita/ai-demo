@@ -1,4 +1,4 @@
-name: Test Copilot Models API
+name: Test GitHub Models API (Hello World)
 on:
   workflow_dispatch:
 
@@ -7,32 +7,42 @@ permissions:
   models: read
 
 jobs:
-  hello-model:
+  ping-model:
     runs-on: ubuntu-latest
     steps:
-      - name: 🧠 Call Copilot Models API (Hello World)
+      - name: 🧠 Call GitHub Models API
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          echo "Testing Copilot Models API..."
+          set -euo pipefail
+          ORG="${{ github.repository_owner }}"
+          echo "Testing Models API for org: $ORG"
 
           jq -n \
-            --arg input "Hello from GitHub Actions. Please reply with the single word 'pong'." \
-            '{
-              model: "openai/gpt-4o-mini",
-              input: $input,
-              parameters: { temperature: 0.2 }
-            }' > req.json
-
-          echo "Request:"
+            --arg input "Hello from GitHub Actions — please respond with 'pong'." \
+            '{ input: $input, parameters: { temperature: 0.2 } }' > req.json
           cat req.json
           echo
 
-          curl -s -i -X POST \
+          echo "Calling https://api.github.com/orgs/$ORG/copilot/models/openai/gpt-4o-mini/inference"
+          echo
+
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o resp.json \
+            -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Content-Type: application/json" \
-            https://api.githubcopilot.com/models/inference \
-            --data @req.json -o resp.json
+            "https://api.github.com/orgs/$ORG/copilot/models/openai/gpt-4o-mini/inference" \
+            --data @req.json)
 
-          echo "✅ Raw response:"
+          echo "HTTP status: $HTTP_CODE"
+          echo "Response:"
           cat resp.json
+          echo
+
+          # Fail if not a 2xx code
+          if [[ ! "$HTTP_CODE" =~ ^2 ]]; then
+            echo "❌ Models API call failed (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
+          echo "✅ Models API call succeeded!"
