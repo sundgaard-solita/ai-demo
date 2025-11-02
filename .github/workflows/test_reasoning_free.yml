@@ -1,0 +1,40 @@
+name: Test Free Reasoning Agent
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reasoning:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🤖 Call a free reasoning model (Hugging Face)
+        run: |
+          set -euo pipefail
+          echo "Testing free reasoning inference (no API key)..."
+
+          jq -n \
+            --arg prompt "You are a helpful reasoning model. Reply with only the word 'pong' if you received this message." \
+            '{ inputs: $prompt }' > req.json
+
+          echo "Request:"
+          cat req.json
+          echo
+
+          curl -s -i -X POST \
+            -H "Content-Type: application/json" \
+            https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-alpha \
+            --data @req.json -o resp.json
+
+          echo
+          echo "✅ Raw response:"
+          cat resp.json
+
+          # Check for pong in output and fail otherwise
+          if grep -iq "pong" resp.json; then
+            echo "✅ Model responded correctly."
+          else
+            echo "❌ Model did not return expected response."
+            exit 1
+          fi
