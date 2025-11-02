@@ -1,0 +1,149 @@
+name: Process New Issue with Copilot Agent
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  process-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Save issue body
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Save issue body from environment variable to avoid code injection
+          printf '%s' "$ISSUE_BODY" > issue_body.txt
+          echo "Original issue body saved"
+          cat issue_body.txt
+      
+      - name: Call Copilot Chat API to process content
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create request for Copilot to process the issue
+          ISSUE_BODY="$(cat issue_body.txt)"
+
+          # Build the prompt based on instructions.md context
+          PROMPT='You are an AI agent that helps automate work for IT employees at Solita Denmark.
+          Your role is to convert rough input (which may be JSON, XML, YAML, or unformatted text from sources like MS Teams)
+          into clean, human-readable markdown format.
+
+          Please process the following issue content and extract:
+          1. A clear, descriptive title
+          2. A well-formatted description in markdown
+          3. Any action items or tasks that should be carried out
+
+          Return your response as JSON with the following structure:
+          {
+            "title": "<descriptive title>",
+            "description": "<markdown formatted description>",
+            "actions": ["<action item 1>", "<action item 2>"]
+          }
+
+          Original issue content to process:'
+
+          # Append the issue body to the prompt
+          FULL_PROMPT="${PROMPT}
+          ${ISSUE_BODY}"
+          
+          # Create request JSON
+          jq -n \
+            --arg prompt "$FULL_PROMPT" \
+            '{
+              model: "gpt-4o",
+              messages: [
+                {
+                  role: "user",
+                  content: $prompt
+                }
+              ]
+            }' > request.json
+          
+          echo "Sending request to Copilot API..."
+          
+          # Call Copilot Chat API
+          gh api --method POST \
+            -H "Content-Type: application/json" \
+            /copilot/chat/completions \
+            --input request.json > response.json || {
+              echo "Failed to call Copilot API"
+              cat response.json
+              exit 1
+            }
+          
+          echo "Response received:"
+          cat response.json
+          
+          # Extract the content
+          jq -r '.choices[0].message.content // empty' response.json > processed.txt
+          
+          if [ ! -s processed.txt ]; then
+            echo "No content returned from Copilot"
+            exit 1
+          fi
+          
+          echo "Processed content:"
+          cat processed.txt
+      
+      - name: Update issue with processed content
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PROCESSED_CONTENT="$(cat processed.txt)"
+
+          # Try to parse as JSON and extract all fields
+          echo "Attempting to parse JSON response..."
+          TITLE=$(echo "$PROCESSED_CONTENT" | jq -r '.title // empty')
+          TITLE_EXIT=$?
+
+          if [ $TITLE_EXIT -ne 0 ]; then
+            echo "⚠️  JSON parsing failed, using raw content as description"
+            TITLE=""
+            DESC="$PROCESSED_CONTENT"
+            ACTIONS=""
+          else
+            # Parse succeeded, get other fields
+            DESC=$(echo "$PROCESSED_CONTENT" | jq -r '.description // empty')
+            ACTIONS=$(echo "$PROCESSED_CONTENT" | jq -r '.actions // empty')
+          fi
+
+          # If description is empty, use the full content
+          if [ -z "$DESC" ]; then
+            echo "Description is empty, using full content"
+            DESC="$PROCESSED_CONTENT"
+          fi
+
+          # Build the full description with actions if any
+          if [ -n "$ACTIONS" ] && [ "$ACTIONS" != "null" ] && [ "$ACTIONS" != "[]" ]; then
+            # Convert actions array to bullet list with tostring for safety
+            ACTION_LIST=$(echo "$ACTIONS" | jq -r '.[] | "- " + (. | tostring)')
+            ACTION_EXIT=$?
+            if [ $ACTION_EXIT -eq 0 ] && [ -n "$ACTION_LIST" ]; then
+              DESC="${DESC}"$'\n\n'"## Action Items"$'\n'"${ACTION_LIST}"
+              echo "✅ Added action items to description"
+            else
+              echo "⚠️  Could not parse actions array, skipping action items"
+            fi
+          fi
+
+          # Update issue - only update title if we got one
+          if [ -n "$TITLE" ] && [ "$TITLE" != "null" ]; then
+            echo "Updating issue with title and description..."
+            gh api --method PATCH \
+              repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+              -f title="$TITLE" \
+              -f body="$DESC"
+          else
+            echo "Updating issue with description only..."
+            # Just update the body
+            gh api --method PATCH \
+              repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+              -f body="$DESC"
+          fi
+
+          echo "✅ Issue updated successfully"
