@@ -1,0 +1,87 @@
+name: Process Issue - Simple Fallback
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to process'
+        required: true
+        type: number
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  process-issue-fallback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Get issue details
+        id: issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_JSON=$(gh api repos/${{ github.repository }}/issues/${{ inputs.issue_number }})
+          echo "ISSUE_BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$ISSUE_JSON" | jq -r '.body' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "ISSUE_TITLE<<EOF" >> $GITHUB_OUTPUT
+          echo "$ISSUE_JSON" | jq -r '.title' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Extract and format Teams message
+        id: extract
+        run: |
+          BODY='${{ steps.issue.outputs.ISSUE_BODY }}'
+          
+          # Try to extract plainTextContent from Teams JSON format
+          PLAIN_TEXT=$(echo "$BODY" | jq -r '.[0].body.body.plainTextContent // empty' 2>/dev/null || echo "")
+          
+          if [ -n "$PLAIN_TEXT" ]; then
+            # It's a Teams message JSON
+            FROM=$(echo "$BODY" | jq -r '.[0].body.from.user.displayName // "Unknown User"' 2>/dev/null || echo "Unknown User")
+            DATE=$(echo "$BODY" | jq -r '.[0].body.createdDateTime // ""' 2>/dev/null || echo "")
+            
+            # Create formatted description
+            DESC="## Message from Teams
+
+**From:** $FROM
+**Date:** $DATE
+
+### Content
+$PLAIN_TEXT
+
+---
+*This issue was automatically created from a Microsoft Teams message.*"
+            
+            # Extract a title from the content (first line or first 50 chars)
+            TITLE=$(echo "$PLAIN_TEXT" | head -1 | cut -c1-50)
+            [ ${#TITLE} -eq 50 ] && TITLE="${TITLE}..."
+            
+          else
+            # Not a Teams message, use as-is
+            DESC="$BODY"
+            TITLE="${{ steps.issue.outputs.ISSUE_TITLE }}"
+          fi
+          
+          echo "DESC<<EOF" >> $GITHUB_OUTPUT
+          echo "$DESC" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "TITLE<<EOF" >> $GITHUB_OUTPUT
+          echo "$TITLE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Update issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PATCH \
+            repos/${{ github.repository }}/issues/${{ inputs.issue_number }} \
+            -f title="${{ steps.extract.outputs.TITLE }}" \
+            -f body="${{ steps.extract.outputs.DESC }}"
+          
+          echo "✅ Issue ${{ inputs.issue_number }} has been reformatted"
