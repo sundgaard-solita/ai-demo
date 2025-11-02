@@ -1,8 +1,15 @@
 ---
-name: sameple refiner agent
-description: refines issues and more
+name: Teams Issue Agent
+description: Rewrites new issues created from Teams into a clean, readable form.
+visibility: private
+trigger:
+  type: issue
+  events: [opened]
+permissions:
+  issues: write
 ---
 
-# My Agent
-
-Describe what your agent does here...
+When a new issue is created, read its body.  
+If the body contains JSON from Microsoft Teams, extract the human message text, sender, and time.  
+Rewrite the issue title and body to clearly describe the request.  
+Keep a brief summary at the top.  
