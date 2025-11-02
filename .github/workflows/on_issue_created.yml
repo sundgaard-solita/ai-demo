@@ -7,6 +7,7 @@ on:
 permissions:
   issues: write
   contents: read
+  models: read
 
 jobs:
   process-issue:
@@ -21,7 +22,7 @@ jobs:
           echo "Original issue body saved"
           cat issue_body.txt
       
-      - name: Call Copilot Chat API to process content
+      - name: Call GitHub Models API to process content
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -55,7 +56,7 @@ jobs:
           jq -n \
             --arg prompt "$FULL_PROMPT" \
             '{
-              model: "gpt-4o",
+              model: "openai/gpt-4o",
               messages: [
                 {
                   role: "user",
@@ -64,14 +65,14 @@ jobs:
               ]
             }' > request.json
           
-          echo "Sending request to Copilot API..."
+          echo "Sending request to GitHub Models API..."
           
-          # Call Copilot Chat API
+          # Call GitHub Models API
           gh api --method POST \
             -H "Content-Type: application/json" \
-            /copilot/chat/completions \
+            /orgs/${{ github.repository_owner }}/models/inference \
             --input request.json > response.json || {
-              echo "Failed to call Copilot API"
+              echo "Failed to call GitHub Models API"
               cat response.json
               exit 1
             }
@@ -83,7 +84,7 @@ jobs:
           jq -r '.choices[0].message.content // empty' response.json > processed.txt
           
           if [ ! -s processed.txt ]; then
-            echo "No content returned from Copilot"
+            echo "No content returned from GitHub Models API"
             exit 1
           fi
           
