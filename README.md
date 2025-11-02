@@ -6,7 +6,7 @@ This repository contains GitHub Copilot automation tools for Solita Denmark.
 
 ### Automated Issue Processing from Teams Messages
 
-When a new issue is created in this repository, a GitHub Actions workflow automatically processes the content using GitHub Copilot Chat API.
+When a new issue is created in this repository, a GitHub Actions workflow automatically processes the content using the GitHub Models API.
 
 **What it does:**
 - Converts rough input (JSON, XML, YAML, or plain text from MS Teams) into clean, human-readable markdown
@@ -16,7 +16,7 @@ When a new issue is created in this repository, a GitHub Actions workflow automa
 
 **How it works:**
 1. When an issue is created (e.g., from a Teams webhook), the workflow triggers
-2. The Copilot Chat API processes the issue body using AI
+2. The GitHub Models API processes the issue body using AI (GPT-4o model)
 3. The issue is automatically updated with:
    - A clean, descriptive title
    - Well-formatted markdown description
@@ -41,8 +41,8 @@ When a new issue is created in this repository, a GitHub Actions workflow automa
 
 The workflow is defined in `.github/workflows/on_issue_created.yml` and:
 - Triggers on issue creation (`issues.opened` event)
-- Uses the GitHub Copilot Chat API (`/copilot/chat/completions`)
-- Requires `issues: write` and `contents: read` permissions
+- Uses the GitHub Models API (`/orgs/{org}/models/inference`)
+- Requires `issues: write`, `contents: read`, and `models: read` permissions
 - Automatically updates the issue with processed content
 
 ## Context
