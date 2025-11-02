@@ -27,6 +27,14 @@ jobs:
             > req.json
           cat req.json
 
+      - name: Debug Copilot API availability
+        run: |
+          echo "Testing Copilot agent endpoints..."
+          gh api /copilot || echo "❌ /copilot root not visible"
+          gh api /copilot/agents || echo "❌ /copilot/agents not visible"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
       - name: Call Copilot Chat API via gh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
