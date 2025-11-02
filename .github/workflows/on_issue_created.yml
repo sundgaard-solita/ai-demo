@@ -96,25 +96,24 @@ jobs:
         run: |
           PROCESSED_CONTENT="$(cat processed.txt)"
 
-          # Try to parse as JSON and extract title and description
+          # Try to parse as JSON and extract all fields
           echo "Attempting to parse JSON response..."
           TITLE=$(echo "$PROCESSED_CONTENT" | jq -r '.title // empty' 2>&1)
           TITLE_EXIT=$?
-          DESC=$(echo "$PROCESSED_CONTENT" | jq -r '.description // empty' 2>&1)
-          DESC_EXIT=$?
-          ACTIONS=$(echo "$PROCESSED_CONTENT" | jq -r '.actions // empty' 2>&1)
-          ACTIONS_EXIT=$?
 
-          # Check if JSON parsing succeeded
-          if [ $TITLE_EXIT -ne 0 ] || [ $DESC_EXIT -ne 0 ]; then
+          if [ $TITLE_EXIT -ne 0 ]; then
             echo "⚠️  JSON parsing failed, using raw content as description"
-            echo "Parse error: $TITLE $DESC"
+            echo "Parse error: $TITLE"
             TITLE=""
             DESC="$PROCESSED_CONTENT"
             ACTIONS=""
+          else
+            # Parse succeeded, get other fields
+            DESC=$(echo "$PROCESSED_CONTENT" | jq -r '.description // empty')
+            ACTIONS=$(echo "$PROCESSED_CONTENT" | jq -r '.actions // empty')
           fi
 
-          # If JSON parsing failed, use the content as description
+          # If description is empty, use the full content
           if [ -z "$DESC" ]; then
             echo "Description is empty, using full content"
             DESC="$PROCESSED_CONTENT"
@@ -122,8 +121,8 @@ jobs:
 
           # Build the full description with actions if any
           if [ -n "$ACTIONS" ] && [ "$ACTIONS" != "null" ] && [ "$ACTIONS" != "[]" ]; then
-            # Convert actions array to bullet list
-            ACTION_LIST=$(echo "$ACTIONS" | jq -r '.[] | "- " + .' 2>&1)
+            # Convert actions array to bullet list with tostring for safety
+            ACTION_LIST=$(echo "$ACTIONS" | jq -r '.[] | "- " + (. | tostring)' 2>&1)
             ACTION_EXIT=$?
             if [ $ACTION_EXIT -eq 0 ] && [ -n "$ACTION_LIST" ]; then
               DESC="${DESC}"$'\n\n'"## Action Items"$'\n'"${ACTION_LIST}"
