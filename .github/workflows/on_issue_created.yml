@@ -98,12 +98,11 @@ jobs:
 
           # Try to parse as JSON and extract all fields
           echo "Attempting to parse JSON response..."
-          TITLE=$(echo "$PROCESSED_CONTENT" | jq -r '.title // empty' 2>&1)
+          TITLE=$(echo "$PROCESSED_CONTENT" | jq -r '.title // empty')
           TITLE_EXIT=$?
 
           if [ $TITLE_EXIT -ne 0 ]; then
             echo "⚠️  JSON parsing failed, using raw content as description"
-            echo "Parse error: $TITLE"
             TITLE=""
             DESC="$PROCESSED_CONTENT"
             ACTIONS=""
@@ -122,7 +121,7 @@ jobs:
           # Build the full description with actions if any
           if [ -n "$ACTIONS" ] && [ "$ACTIONS" != "null" ] && [ "$ACTIONS" != "[]" ]; then
             # Convert actions array to bullet list with tostring for safety
-            ACTION_LIST=$(echo "$ACTIONS" | jq -r '.[] | "- " + (. | tostring)' 2>&1)
+            ACTION_LIST=$(echo "$ACTIONS" | jq -r '.[] | "- " + (. | tostring)')
             ACTION_EXIT=$?
             if [ $ACTION_EXIT -eq 0 ] && [ -n "$ACTION_LIST" ]; then
               DESC="${DESC}"$'\n\n'"## Action Items"$'\n'"${ACTION_LIST}"
