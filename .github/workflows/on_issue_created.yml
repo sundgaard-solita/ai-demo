@@ -11,9 +11,10 @@ jobs:
   reason:
     runs-on: ubuntu-latest
     steps:
-      - name: Save issue body
+      - name: Save issue body safely
         run: |
-          printf "%s" "${{ github.event.issue.body }}" > issue_body.txt
+          echo '${{ toJson(github.event.issue.body) }}' > issue_body.txt
+          echo "✅ Saved body to issue_body.txt"
 
       - name: Build Copilot request
         run: |
