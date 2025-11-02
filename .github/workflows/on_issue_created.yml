@@ -6,43 +6,61 @@ on:
 permissions:
   issues: write
   contents: read
-  copilot: read
 
 jobs:
   reason:
     runs-on: ubuntu-latest
     steps:
-      - name: 🧠 Ask Copilot to rewrite the issue
+      - name: Save issue body
+        run: |
+          printf "%s" "${{ github.event.issue.body }}" > issue_body.txt
+
+      - name: Build Copilot request
+        run: |
+          PROMPT="Rewrite the following Teams-originated message into a clean, human-readable GitHub issue. Extract intent, clarify request, and propose a descriptive title. Output JSON with keys: title, description."
+          ISSUE_BODY="$(cat issue_body.txt)"
+          jq -n \
+            --arg prompt "$PROMPT" \
+            --arg body "$ISSUE_BODY" \
+            '{ model:"gpt-4o-mini", messages:[ {role:"user", content: ($prompt + "\n\n" + $body)} ] }' \
+            > req.json
+          cat req.json
+
+      - name: Call Copilot Chat API via gh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ISSUE_BODY="${{ github.event.issue.body }}"
-          PROMPT="Rewrite the following Teams-originated message into a clean, human-readable GitHub issue. Extract intent, clarify request, and propose a descriptive title. Output JSON with keys: title, description."
+          # POST to Copilot chat completions using gh api
+          RESP=$(gh api --method POST \
+            -H "content-type: application/json" \
+            /copilot/chat/completions \
+            --input req.json)
 
-          # Call GitHub's internal Copilot reasoning API
-          RESP=$(gh api copilot/chat/completions \
-            -f model=gpt-4o-mini \
-            -f messages="[{'role':'user','content':'$PROMPT\n\n$ISSUE_BODY'}]" \
-            | jq -r '.choices[0].message.content')
+          echo "$RESP" | tee resp.json
+          # Try to extract model output
+          TEXT=$(jq -r '.choices[0].message.content // empty' resp.json)
+          if [ -z "$TEXT" ] || [ "$TEXT" = "null" ]; then
+            TEXT="(Copilot returned empty or unexpected response)\n\n\`\`\`json\n$(cat resp.json)\n\`\`\`"
+          fi
+          printf "%s" "$TEXT" > refined.txt
 
-          echo "Copilot response:"
-          echo "$RESP"
-
-          # Try to parse the JSON Copilot produced
-          TITLE=$(echo "$RESP" | jq -r '.title // empty' 2>/dev/null || true)
-          DESC=$(echo "$RESP" | jq -r '.description // .summary // empty' 2>/dev/null || true)
-
-          # Fallback: if Copilot replied in plain text, use that as description
+      - name: Update issue with refined content
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE=$(jq -r 'try (fromjson | .title) catch empty' refined.txt)
+          DESC=$(jq -r 'try (fromjson | .description) catch empty' refined.txt)
+          # If not valid JSON, treat whole text as description
           if [ -z "$DESC" ]; then
-            DESC="$RESP"
+            DESC="$(cat refined.txt)"
+          fi
+          # Fallback title if missing
+          if [ -z "$TITLE" ]; then
+            TITLE="Refined issue"
           fi
 
-          echo "TITLE: $TITLE"
-          echo "DESC length: $(printf "%s" "$DESC" | wc -c)"
-
-          # Update the issue directly in this repo
-          gh api \
-            --method PATCH \
+          # Patch issue
+          gh api --method PATCH \
             repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
-            -f title="${TITLE:-Refined issue}" \
+            -f title="$TITLE" \
             -f body="$DESC"
