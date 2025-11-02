@@ -49,12 +49,15 @@ jobs:
           }
 
           Original issue content to process:
-          '"${ISSUE_BODY}"
+          '
+          
+          # Append the issue body to create the full prompt
+          FULL_PROMPT="${PROMPT}${ISSUE_BODY}"
           
           # Create request JSON using the correct API format
           # The endpoint expects: input field with the prompt text
           jq -n \
-            --arg input "$PROMPT" \
+            --arg input "$FULL_PROMPT" \
             '{
               input: $input,
               parameters: {
