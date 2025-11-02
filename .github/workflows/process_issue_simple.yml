@@ -45,21 +45,19 @@ jobs:
             FROM=$(echo "$BODY" | jq -r '.[0].body.from.user.displayName // "Unknown User"' 2>/dev/null || echo "Unknown User")
             DATE=$(echo "$BODY" | jq -r '.[0].body.createdDateTime // ""' 2>/dev/null || echo "")
             
-            # Create formatted description
-            DESC="## Message from Teams
-
-**From:** $FROM
-**Date:** $DATE
-
-### Content
-$PLAIN_TEXT
-
----
-*This issue was automatically created from a Microsoft Teams message.*"
+            # Create formatted description using printf to avoid YAML issues
+            DESC=$(printf "## Message from Teams\n\n")
+            DESC="${DESC}$(printf "**From:** %s\n" "$FROM")"
+            DESC="${DESC}$(printf "**Date:** %s\n\n" "$DATE")"
+            DESC="${DESC}$(printf "### Content\n%s\n\n" "$PLAIN_TEXT")"
+            DESC="${DESC}$(printf -- "---\n")"
+            DESC="${DESC}$(printf "*This issue was automatically created from a Microsoft Teams message.*\n")"
             
             # Extract a title from the content (first line or first 50 chars)
             TITLE=$(echo "$PLAIN_TEXT" | head -1 | cut -c1-50)
-            [ ${#TITLE} -eq 50 ] && TITLE="${TITLE}..."
+            if [ ${#TITLE} -eq 50 ]; then
+              TITLE="${TITLE}..."
+            fi
             
           else
             # Not a Teams message, use as-is
@@ -67,13 +65,15 @@ $PLAIN_TEXT
             TITLE="${{ steps.issue.outputs.ISSUE_TITLE }}"
           fi
           
-          echo "DESC<<EOF" >> $GITHUB_OUTPUT
-          echo "$DESC" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          
-          echo "TITLE<<EOF" >> $GITHUB_OUTPUT
-          echo "$TITLE" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # Use GitHub Actions multiline output format
+          {
+            echo "DESC<<EODESC"
+            echo "$DESC"
+            echo "EODESC"
+            echo "TITLE<<EOTITLE"
+            echo "$TITLE"
+            echo "EOTITLE"
+          } >> $GITHUB_OUTPUT
       
       - name: Update issue
         env:
