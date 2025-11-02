@@ -13,10 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Save issue body
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
-          cat << 'EOF' > issue_body.txt
-          ${{ github.event.issue.body }}
-          EOF
+          # Save issue body from environment variable to avoid code injection
+          printf '%s' "$ISSUE_BODY" > issue_body.txt
           echo "Original issue body saved"
           cat issue_body.txt
       
