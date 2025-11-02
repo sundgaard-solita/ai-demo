@@ -26,7 +26,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Create request for Copilot to process the issue
+          set -euo pipefail
+          
+          # Read the issue body
           ISSUE_BODY="$(cat issue_body.txt)"
 
           # Build the prompt based on instructions.md context
@@ -46,49 +48,89 @@ jobs:
             "actions": ["<action item 1>", "<action item 2>"]
           }
 
-          Original issue content to process:'
-
-          # Append the issue body to the prompt
+          Original issue content to process:
+          '
+          
+          # Append the issue body to create the full prompt (with spacing for readability)
           FULL_PROMPT="${PROMPT}
+
           ${ISSUE_BODY}"
           
-          # Create request JSON
+          # Create request JSON using the correct API format
+          # The endpoint expects: input field with the prompt text
           jq -n \
-            --arg prompt "$FULL_PROMPT" \
+            --arg input "$FULL_PROMPT" \
             '{
-              model: "openai/gpt-4o",
-              messages: [
-                {
-                  role: "user",
-                  content: $prompt
-                }
-              ]
+              input: $input,
+              parameters: {
+                temperature: 0.3,
+                max_tokens: 2000
+              }
             }' > request.json
           
-          echo "Sending request to GitHub Models API..."
+          echo "Request payload:"
+          jq '.' request.json
+          echo
           
-          # Call GitHub Models API
-          gh api --method POST \
+          ORG="${{ github.repository_owner }}"
+          MODEL="gpt-4o"
+          ENDPOINT="https://api.github.com/orgs/$ORG/copilot/models/openai/$MODEL/inference"
+          
+          echo "Calling GitHub Copilot Models API..."
+          echo "Endpoint: $ENDPOINT"
+          echo
+          
+          # Call GitHub Copilot Models API with proper error handling
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o response.json \
+            -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
             -H "Content-Type: application/json" \
-            /orgs/${{ github.repository_owner }}/models/inference \
-            --input request.json > response.json || {
-              echo "Failed to call GitHub Models API"
-              cat response.json
-              exit 1
-            }
+            "$ENDPOINT" \
+            --data @request.json)
           
-          echo "Response received:"
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response:"
           cat response.json
+          echo
           
-          # Extract the content
-          jq -r '.choices[0].message.content // empty' response.json > processed.txt
-          
-          if [ ! -s processed.txt ]; then
-            echo "No content returned from GitHub Models API"
+          # Check for errors
+          if [[ ! "$HTTP_CODE" =~ ^2 ]]; then
+            echo "❌ GitHub Copilot Models API call failed (HTTP $HTTP_CODE)"
+            echo
+            echo "Troubleshooting:"
+            if [[ "$HTTP_CODE" == "404" ]]; then
+              echo "• The Copilot Models API endpoint was not found (404)"
+              echo "• Possible causes:"
+              echo "  1. GitHub Copilot may not be enabled for the organization '$ORG'"
+              echo "  2. The repository may not have access to Copilot Models"
+              echo "  3. The API endpoint may have changed"
+              echo
+              echo "• To fix this:"
+              echo "  1. Ensure GitHub Copilot is enabled for your organization"
+              echo "  2. Check that the repository has 'models: read' permission in workflow settings"
+              echo "  3. Verify your organization has access to GitHub Models"
+            elif [[ "$HTTP_CODE" == "403" ]]; then
+              echo "• Access forbidden (403) - check permissions"
+              echo "• Ensure the workflow has 'models: read' permission"
+            else
+              echo "• Unexpected error occurred"
+              echo "• Check the response above for details"
+            fi
             exit 1
           fi
           
-          echo "Processed content:"
+          # Extract the response content
+          # The response format varies by model - try common patterns
+          # Expected formats: .output, .text, or OpenAI-style .choices[0].message.content
+          jq -r '.output // .text // .choices[0].message.content // empty' response.json > processed.txt
+          
+          if [ ! -s processed.txt ]; then
+            echo "⚠️  No content extracted from API response"
+            echo "Response may have unexpected format. Trying to use full response as content..."
+            cat response.json > processed.txt
+          fi
+          
+          echo "✅ Processed content:"
           cat processed.txt
       
       - name: Update issue with processed content
