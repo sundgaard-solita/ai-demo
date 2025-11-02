@@ -26,35 +26,38 @@ jobs:
         run: |
           # Create request for Copilot to process the issue
           ISSUE_BODY="$(cat issue_body.txt)"
-          
+
           # Build the prompt based on instructions.md context
-          PROMPT="You are an AI agent that helps automate work for IT employees at Solita Denmark. 
-          Your role is to convert rough input (which may be JSON, XML, YAML, or unformatted text from sources like MS Teams) 
+          PROMPT='You are an AI agent that helps automate work for IT employees at Solita Denmark.
+          Your role is to convert rough input (which may be JSON, XML, YAML, or unformatted text from sources like MS Teams)
           into clean, human-readable markdown format.
-          
+
           Please process the following issue content and extract:
           1. A clear, descriptive title
           2. A well-formatted description in markdown
           3. Any action items or tasks that should be carried out
-          
+
           Return your response as JSON with the following structure:
           {
-            \"title\": \"<descriptive title>\",
-            \"description\": \"<markdown formatted description>\",
-            \"actions\": [\"<action item 1>\", \"<action item 2>\"]
+            "title": "<descriptive title>",
+            "description": "<markdown formatted description>",
+            "actions": ["<action item 1>", "<action item 2>"]
           }
-          
-          Original issue content to process:
-          $ISSUE_BODY"
+
+          Original issue content to process:'
+
+          # Append the issue body to the prompt
+          FULL_PROMPT="${PROMPT}
+          ${ISSUE_BODY}"
           
           # Create request JSON
           jq -n \
-            --arg prompt "$PROMPT" \
-            '{ 
-              model: "gpt-4o", 
+            --arg prompt "$FULL_PROMPT" \
+            '{
+              model: "gpt-4o",
               messages: [
                 {
-                  role: "user", 
+                  role: "user",
                   content: $prompt
                 }
               ]
@@ -93,31 +96,50 @@ jobs:
           PROCESSED_CONTENT="$(cat processed.txt)"
 
           # Try to parse as JSON and extract title and description
-          TITLE=$(echo "$PROCESSED_CONTENT" | jq -r '.title // empty' 2>/dev/null)
-          DESC=$(echo "$PROCESSED_CONTENT" | jq -r '.description // empty' 2>/dev/null)
-          ACTIONS=$(echo "$PROCESSED_CONTENT" | jq -r '.actions // empty' 2>/dev/null)
+          echo "Attempting to parse JSON response..."
+          TITLE=$(echo "$PROCESSED_CONTENT" | jq -r '.title // empty' 2>&1)
+          TITLE_EXIT=$?
+          DESC=$(echo "$PROCESSED_CONTENT" | jq -r '.description // empty' 2>&1)
+          DESC_EXIT=$?
+          ACTIONS=$(echo "$PROCESSED_CONTENT" | jq -r '.actions // empty' 2>&1)
+          ACTIONS_EXIT=$?
+
+          # Check if JSON parsing succeeded
+          if [ $TITLE_EXIT -ne 0 ] || [ $DESC_EXIT -ne 0 ]; then
+            echo "⚠️  JSON parsing failed, using raw content as description"
+            echo "Parse error: $TITLE $DESC"
+            TITLE=""
+            DESC="$PROCESSED_CONTENT"
+            ACTIONS=""
+          fi
 
           # If JSON parsing failed, use the content as description
           if [ -z "$DESC" ]; then
+            echo "Description is empty, using full content"
             DESC="$PROCESSED_CONTENT"
           fi
 
           # Build the full description with actions if any
           if [ -n "$ACTIONS" ] && [ "$ACTIONS" != "null" ] && [ "$ACTIONS" != "[]" ]; then
             # Convert actions array to bullet list
-            ACTION_LIST=$(echo "$ACTIONS" | jq -r '.[] | "- " + .' 2>/dev/null)
-            if [ -n "$ACTION_LIST" ]; then
+            ACTION_LIST=$(echo "$ACTIONS" | jq -r '.[] | "- " + .' 2>&1)
+            if [ $? -eq 0 ] && [ -n "$ACTION_LIST" ]; then
               DESC="${DESC}"$'\n\n'"## Action Items"$'\n'"${ACTION_LIST}"
+              echo "✅ Added action items to description"
+            else
+              echo "⚠️  Could not parse actions array, skipping action items"
             fi
           fi
 
           # Update issue - only update title if we got one
           if [ -n "$TITLE" ] && [ "$TITLE" != "null" ]; then
+            echo "Updating issue with title and description..."
             gh api --method PATCH \
               repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
               -f title="$TITLE" \
               -f body="$DESC"
           else
+            echo "Updating issue with description only..."
             # Just update the body
             gh api --method PATCH \
               repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
