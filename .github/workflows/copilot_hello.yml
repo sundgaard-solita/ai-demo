@@ -51,6 +51,27 @@ jobs:
         run: |
           gh auth status || echo "⚠️ Authentication check failed"
 
+      - name: List Copilot CLI capabilities
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          set -e
+          echo "== gh version =="
+          gh --version
+          echo
+          echo "== installed extensions =="
+          gh extension list || true
+          echo
+          echo "== gh copilot --help (top) =="
+          gh copilot --help || true
+          echo
+          echo "== subcommands slice =="
+          gh copilot --help | sed -n '/Available Commands:/,/Flags:/p' || true
+          echo
+          echo "== all help entries mentioning copilot =="
+          gh help -a | sed -n '/copilot/p' || true
+
+
       - name: Call Copilot Agent
         run: |
           echo "🧠 Testing Copilot Agent connectivity..."
