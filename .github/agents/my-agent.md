@@ -6,6 +6,9 @@ trigger:
   type: issue
   events: [opened]
 tools:
+  - name: bash
+    description: Execute shell commands inside the repo workspace
+    mode: sync
   - name: github.issues.update
     description: Can edit issue titles and bodies
 permissions:
