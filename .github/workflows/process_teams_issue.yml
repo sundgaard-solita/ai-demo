@@ -1,0 +1,91 @@
+name: Process Teams Issue Automatically
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  process-teams-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract and format Teams message
+        id: extract
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          # Try to extract plainTextContent from Teams JSON format
+          # Teams messages come in the format: [{"body":{"body":{"plainTextContent":"..."},"from":{"user":{"displayName":"..."}},"createdDateTime":"..."}}]
+          PLAIN_TEXT=$(echo "$ISSUE_BODY" | jq -r '.[0].body.body.plainTextContent // empty' 2>/dev/null || echo "")
+          
+          if [ -n "$PLAIN_TEXT" ] && [ "$PLAIN_TEXT" != "null" ]; then
+            echo "✅ Detected Teams message JSON format"
+            
+            # It's a Teams message JSON - extract additional metadata
+            FROM=$(echo "$ISSUE_BODY" | jq -r '.[0].body.from.user.displayName // "Unknown User"' 2>/dev/null || echo "Unknown User")
+            DATE=$(echo "$ISSUE_BODY" | jq -r '.[0].body.createdDateTime // ""' 2>/dev/null || echo "")
+            
+            # Create formatted description
+            DESC="## Summary
+${PLAIN_TEXT}
+
+## Message Details
+
+**From:** ${FROM}
+**Date:** ${DATE}
+
+---
+
+*This issue was automatically created from a Microsoft Teams message.*"
+            
+            # Extract a title from the content (first line or first 50 chars)
+            TITLE=$(echo "$PLAIN_TEXT" | head -1 | cut -c1-50)
+            if [ ${#TITLE} -eq 50 ]; then
+              TITLE="${TITLE}..."
+            fi
+            
+            echo "✅ Extracted information:"
+            echo "  Title: $TITLE"
+            echo "  From: $FROM"
+            echo "  Date: $DATE"
+            echo "  Content: $PLAIN_TEXT"
+            
+          else
+            echo "ℹ️  Not a Teams message format, skipping processing"
+            # Not a Teams message, don't update the issue
+            DESC=""
+            TITLE=""
+          fi
+          
+          # Use GitHub Actions multiline output format
+          {
+            echo "DESC<<EODESC"
+            echo "$DESC"
+            echo "EODESC"
+            echo "TITLE<<EOTITLE"
+            echo "$TITLE"
+            echo "EOTITLE"
+            echo "SHOULD_UPDATE<<EOUPDATE"
+            if [ -n "$DESC" ] && [ -n "$TITLE" ]; then
+              echo "true"
+            else
+              echo "false"
+            fi
+            echo "EOUPDATE"
+          } >> $GITHUB_OUTPUT
+      
+      - name: Update issue
+        if: steps.extract.outputs.SHOULD_UPDATE == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PATCH \
+            repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+            -f title="${{ steps.extract.outputs.TITLE }}" \
+            -f body="${{ steps.extract.outputs.DESC }}"
+          
+          echo "✅ Issue ${{ github.event.issue.number }} has been reformatted"
