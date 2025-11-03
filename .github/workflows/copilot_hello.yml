@@ -17,6 +17,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check if PAT exists
+        run: |
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "❌ No GH_TOKEN found — maybe you didn’t create the PAT_GITHUB secret yet?"
+            echo "👉 Go to: Settings → Secrets and variables → Actions → New repository secret → Name: PAT_GITHUB"
+            exit 1
+          else
+            echo "✅ GH_TOKEN detected, continuing..."
+          fi
+
       - name: Install latest GitHub CLI and Copilot extension
         run: |
           echo "Installing latest GitHub CLI..."
@@ -24,6 +34,18 @@ jobs:
           sudo apt-get install -y -qq gh
           echo "Installing Copilot extension..."
           gh extension install github/gh-copilot || gh extension upgrade github/gh-copilot
+
+      - name: Verify token works
+        run: |
+          if ! gh auth status > /dev/null 2>&1; then
+            echo "⚠️ GitHub CLI not yet authenticated — trying login..."
+            echo "$GH_TOKEN" | gh auth login --with-token || {
+              echo "❌ Authentication failed — check your PAT_GITHUB scopes or validity."
+              exit 1
+            }
+          else
+            echo "✅ GitHub CLI already authenticated."
+          fi          
 
       - name: Verify authentication
         run: |
