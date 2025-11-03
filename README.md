@@ -110,3 +110,14 @@ If GitHub Copilot Models API is not available for your organization:
 - Use the simple fallback workflow for basic Teams message formatting
 - Consider using GitHub Copilot Chat to manually process issues
 - Set up a custom webhook to an external AI service (requires additional configuration)
+
+# Using alternative agent 
+You can use any alternative or self hosted agent such as ollama.
+
+``` sh
+ollama pull phi3:mini
+ollama serve
+python3 reasoning_agent.py
+# write a one-sentence summary of clean code principles
+```
+

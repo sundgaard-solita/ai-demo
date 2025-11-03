@@ -5,6 +5,9 @@ visibility: private
 trigger:
   type: issue
   events: [opened]
+tools:
+  - name: github.issues.update
+    description: Can edit issue titles and bodies
 permissions:
   issues: write
 ---
@@ -12,4 +15,4 @@ permissions:
 When a new issue is created, read its body.  
 If the body contains JSON from Microsoft Teams, extract the human message text, sender, and time.  
 Rewrite the issue title and body to clearly describe the request.  
-Keep a brief summary at the top.  
+Keep a brief summary at the top.
