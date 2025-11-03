@@ -71,6 +71,17 @@ jobs:
           echo "== all help entries mentioning copilot =="
           gh help -a | sed -n '/copilot/p' || true
 
+      - name: Test Copilot reasoning ability
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+        run: |
+          echo '{
+            "body": "Please add mrs to bdk project",
+            "sender": "Michael Ringholm Sundgaard"
+          }' > issue.json
+
+          echo "🧠 Asking Copilot to rephrase the issue..."
+          gh copilot suggest -p "You are an issue-formatting assistant. Read this JSON and output a human-friendly issue title and markdown body:\n$(cat issue.json)"
 
       - name: Call Copilot Agent
         run: |
