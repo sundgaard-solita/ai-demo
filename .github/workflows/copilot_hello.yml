@@ -1,7 +1,7 @@
 name: Copilot Agent Hello World
 
 on:
-  workflow_dispatch:  # manual trigger for now
+  workflow_dispatch:  # run manually for testing
 
 permissions:
   contents: read
@@ -10,31 +10,28 @@ permissions:
 jobs:
   hello-agent:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PAT_GITHUB }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install GitHub CLI with Copilot extension
+      - name: Install latest GitHub CLI and Copilot extension
         run: |
-          GH_VERSION="2.80.0"
-          ARCH=$(dpkg --print-architecture)
-          wget -q https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${ARCH}.deb -O /tmp/gh.deb
-          sudo dpkg -i /tmp/gh.deb
+          echo "Installing latest GitHub CLI..."
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gh
+          echo "Installing Copilot extension..."
           gh extension install github/gh-copilot || gh extension upgrade github/gh-copilot
 
-      - name: Authenticate GitHub CLI
-        env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+      - name: Verify authentication
         run: |
-          echo "$GH_TOKEN" | gh auth login --with-token
-          gh auth status
+          gh auth status || echo "⚠️ Authentication check failed"
 
-      - name: Create Copilot Agent test task
-        env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+      - name: Call Copilot Agent
         run: |
-          echo "🧠 Calling Copilot Agent..."
+          echo "🧠 Testing Copilot Agent connectivity..."
           gh copilot agent create \
             --name "Hello-Test-Agent" \
             --instructions "You are a helpful assistant. Reply with 'pong' when you receive 'ping'." \
