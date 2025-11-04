@@ -1,0 +1,21 @@
+name: Assign Copilot on New Issue
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  assign-copilot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🤖 Assign Copilot agent to issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Assigning Copilot to issue #${{ github.event.issue.number }}..."
+          gh issue edit ${{ github.event.issue.number }} \
+            --repo "${{ github.repository }}" \
+            --add-assignee "Copilot (AI)"
