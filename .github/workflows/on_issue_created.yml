@@ -5,7 +5,7 @@ on:
     types: [opened]
 
 permissions:
-  issues: write
+  issues: write   
 
 jobs:
   assign-copilot:
@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: 🤖 Assign Copilot agent to issue
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_OAUTH_TEMP_LOGIN_SECRET }}
         run: |
           echo "Assigning Copilot to issue #${{ github.event.issue.number }}..."
           gh issue edit ${{ github.event.issue.number }} \
