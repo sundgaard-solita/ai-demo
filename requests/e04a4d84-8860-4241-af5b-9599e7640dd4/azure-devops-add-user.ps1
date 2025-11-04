@@ -113,7 +113,7 @@ try {
 # Add user to team
 Write-Host "Adding user to team..." -ForegroundColor Yellow
 try {
-    $addMemberUrl = "$baseUrl/_apis/projects/$projectId/teams/$teamId/members/$userDescriptor`?api-version=7.0"
+    $addMemberUrl = "$baseUrl/_apis/projects/$projectId/teams/$teamId/members/$userDescriptor?api-version=7.0"
     $addMemberResponse = Invoke-RestMethod -Uri $addMemberUrl -Headers $headers -Method Put
     
     Write-Host "✓ Successfully added user to team!" -ForegroundColor Green

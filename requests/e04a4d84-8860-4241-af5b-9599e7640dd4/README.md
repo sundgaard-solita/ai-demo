@@ -46,8 +46,12 @@ See the IaC scripts in this directory:
 ## Execution Notes
 
 Replace the following placeholders before execution:
-- `{TENANT_ID}` - Azure AD Tenant ID
+- `{TENANT_ID}` - Azure AD Tenant ID (tenant ID for Solita Denmark)
 - `{SUBSCRIPTION_ID}` - Azure Subscription ID
-- `{RESOURCE_GROUP_NAME}` - Actual name of DR3 resource group
-- `{USER_EMAIL}` - Michael Ringholm Sundgaard's email (mrs@solita.dk)
-- `{ROLE}` - Appropriate RBAC role (e.g., Contributor, Reader)
+- `{PROJECT_NAME}` - Azure DevOps project name (for Azure DevOps script)
+- `{PAT_TOKEN}` - Personal Access Token with appropriate permissions (for Azure DevOps script)
+- `{ROLE}` - Appropriate RBAC role (default: Contributor)
+
+Note: The scripts are pre-configured with:
+- Resource Group: DR3
+- User Email: mrs@solita.dk (Michael Ringholm Sundgaard)
