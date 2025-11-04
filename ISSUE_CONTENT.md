@@ -7,7 +7,7 @@ Request to add Michael Ringholm Sundgaard (MRS) to the BDK team or project.
 
 **Request:** Add MRS to BDK
 
-**Requested by:** Michael Ringholm Sundgaard  
+**Requested by:** Michael Ringholm Sundgaard
 **Date:** November 4, 2025 at 12:31 UTC
 
 ## Description
