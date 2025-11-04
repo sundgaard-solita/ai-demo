@@ -31,12 +31,21 @@ try {
     
     # Find the team by name
     Write-Host "Looking for team '$TeamName'..." -ForegroundColor Cyan
-    $team = Get-Team -DisplayName $TeamName
+    $teams = @(Get-Team -DisplayName $TeamName)
     
-    if (-not $team) {
+    if ($teams.Count -eq 0) {
         Write-Error "Team '$TeamName' not found"
         exit 1
     }
+    
+    if ($teams.Count -gt 1) {
+        Write-Error "Multiple teams found with name '$TeamName'. Please specify a unique team name or use team ID."
+        Write-Host "Found teams:" -ForegroundColor Yellow
+        $teams | ForEach-Object { Write-Host "  - $($_.DisplayName) (ID: $($_.GroupId))" -ForegroundColor Yellow }
+        exit 1
+    }
+    
+    $team = $teams[0]
     
     $teamId = $team.GroupId
     Write-Host "Found team: $($team.DisplayName) (ID: $teamId)" -ForegroundColor Green

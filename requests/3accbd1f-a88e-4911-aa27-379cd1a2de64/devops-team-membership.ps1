@@ -32,7 +32,10 @@ if (-not $PAT) {
 
 # Install Azure DevOps CLI extension if not present
 Write-Host "Checking Azure DevOps CLI extension..." -ForegroundColor Cyan
-az extension add --name azure-devops 2>$null
+$extensionResult = az extension add --name azure-devops 2>&1
+if ($LASTEXITCODE -ne 0 -and $extensionResult -notmatch "already installed") {
+    Write-Warning "Azure DevOps CLI extension installation encountered an issue: $extensionResult"
+}
 
 # Configure Azure DevOps defaults
 $env:AZURE_DEVOPS_EXT_PAT = $PAT
@@ -52,7 +55,7 @@ try {
     
     # Log for compliance
     $logEntry = @{
-        Timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss UTC")
+        Timestamp = (Get-Date).ToUniversalTime().ToString("o")
         RequestId = "3accbd1f-a88e-4911-aa27-379cd1a2de64"
         Action = "Add Team Member"
         User = $UserEmail
@@ -71,7 +74,7 @@ try {
     
     # Log failure for compliance
     $logEntry = @{
-        Timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss UTC")
+        Timestamp = (Get-Date).ToUniversalTime().ToString("o")
         RequestId = "3accbd1f-a88e-4911-aa27-379cd1a2de64"
         Action = "Add Team Member"
         User = $UserEmail
