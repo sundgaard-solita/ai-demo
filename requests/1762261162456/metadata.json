@@ -1,0 +1,37 @@
+{
+  "requestId": "1762261162456",
+  "createdDateTime": "2025-11-04T12:59:22.456Z",
+  "processedDateTime": "2025-11-04T13:05:00.000Z",
+  "source": "Microsoft Teams",
+  "requester": {
+    "displayName": "Michael Ringholm Sundgaard",
+    "userId": "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+    "userIdentityType": "aadUser",
+    "tenantId": "635aa01e-f19d-49ec-8aed-4b2e4312a627"
+  },
+  "originalMessage": {
+    "plainTextContent": "add mrs to RIT5",
+    "contentType": "html",
+    "content": "<p>add mrs to RIT5</p>"
+  },
+  "parsedRequest": {
+    "action": "add_user_to_team",
+    "user": {
+      "abbreviation": "mrs",
+      "fullName": "Michael Ringholm Sundgaard",
+      "email": "michael.sundgaard@solita.dk",
+      "userId": "81330d43-ae3b-4bb1-b698-4adacf0e5bca"
+    },
+    "target": {
+      "teamName": "RIT5",
+      "platform": "unknown"
+    }
+  },
+  "status": "pending",
+  "artifactsGenerated": [
+    "README.md",
+    "azure-ad-add-user.ps1",
+    "azure-devops-add-user.sh",
+    "github-add-user.sh"
+  ]
+}
