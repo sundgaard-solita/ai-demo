@@ -60,7 +60,7 @@ try {
         Write-Host "SUCCESS: User successfully added to group '$groupName'" -ForegroundColor Green
         Write-Host ""
         Write-Host "Audit Information:"
-        Write-Host "- Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')"
+        Write-Host "- Timestamp: $((Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ss UTC'))"
         Write-Host "- Request ID: 1762261162456"
         Write-Host "- User: $userId"
         Write-Host "- Group: $($group.ObjectId)"

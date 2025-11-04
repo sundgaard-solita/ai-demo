@@ -70,7 +70,7 @@ fi
 
 # Add user to team
 echo "Adding user to team..."
-az devops team list-member add \
+az devops team member add \
     --team "$TEAM_NAME" \
     --project "$PROJECT_NAME" \
     --user "$USER_EMAIL"
