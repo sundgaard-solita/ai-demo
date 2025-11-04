@@ -79,7 +79,11 @@ if [ "$TEAM_ID" = "PLACEHOLDER_TEAM_ID" ]; then
         -H "Content-Type: application/json" \
         "https://graph.microsoft.com/v1.0/groups?\$filter=resourceProvisioningOptions/Any(x:x eq 'Team') and displayName eq '$TEAM_NAME'")
     
-    TEAM_ID=$(echo "$TEAM_SEARCH_RESULT" | grep -o '"id":"[^"]*"' | head -1 | sed 's/"id":"//;s/"//')
+    if command -v jq &> /dev/null; then
+        TEAM_ID=$(echo "$TEAM_SEARCH_RESULT" | jq -r '.value[0].id // empty')
+    else
+        TEAM_ID=$(echo "$TEAM_SEARCH_RESULT" | grep -o '"id":"[^"]*"' | head -1 | sed 's/"id":"//;s/"//')
+    fi
     
     if [ -z "$TEAM_ID" ]; then
         print_error "Team '$TEAM_NAME' not found"
@@ -99,7 +103,11 @@ TEAM_INFO=$(curl -s -X GET \
     -H "Content-Type: application/json" \
     "https://graph.microsoft.com/v1.0/teams/$TEAM_ID")
 
-TEAM_DISPLAY_NAME=$(echo "$TEAM_INFO" | grep -o '"displayName":"[^"]*"' | sed 's/"displayName":"//;s/"//')
+if command -v jq &> /dev/null; then
+    TEAM_DISPLAY_NAME=$(echo "$TEAM_INFO" | jq -r '.displayName // empty')
+else
+    TEAM_DISPLAY_NAME=$(echo "$TEAM_INFO" | grep -o '"displayName":"[^"]*"' | sed 's/"displayName":"//;s/"//')
+fi
 
 if [ -z "$TEAM_DISPLAY_NAME" ]; then
     print_error "Team with ID '$TEAM_ID' not found"
@@ -115,13 +123,21 @@ MEMBERS=$(curl -s -X GET \
     -H "Content-Type: application/json" \
     "https://graph.microsoft.com/v1.0/teams/$TEAM_ID/members")
 
-IS_MEMBER=$(echo "$MEMBERS" | grep -c "\"id\":\"$USER_ID\"" || echo "0")
+if command -v jq &> /dev/null; then
+    IS_MEMBER=$(echo "$MEMBERS" | jq --arg uid "$USER_ID" '[.value[]? | select(.id == $uid)] | length')
+else
+    IS_MEMBER=$(echo "$MEMBERS" | grep -c "\"id\":\"$USER_ID\"" || echo "0")
+fi
 
 if [ "$IS_MEMBER" -gt 0 ]; then
     print_warning "User is already a member of team '$TEAM_DISPLAY_NAME'"
     echo ""
     print_info "Current team members:"
-    echo "$MEMBERS" | grep -o '"displayName":"[^"]*"' | sed 's/"displayName":"//;s/"//g' | sort
+    if command -v jq &> /dev/null; then
+        echo "$MEMBERS" | jq -r '.value[]?.displayName // empty' | sort
+    else
+        echo "$MEMBERS" | grep -o '"displayName":"[^"]*"' | sed 's/"displayName":"//;s/"//g' | sort
+    fi
     exit 0
 fi
 
@@ -167,7 +183,11 @@ if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
         -H "Authorization: Bearer $ACCESS_TOKEN" \
         -H "Content-Type: application/json" \
         "https://graph.microsoft.com/v1.0/teams/$TEAM_ID/members")
-    echo "$UPDATED_MEMBERS" | grep -o '"displayName":"[^"]*"' | sed 's/"displayName":"//;s/"//g' | sort
+    if command -v jq &> /dev/null; then
+        echo "$UPDATED_MEMBERS" | jq -r '.value[]?.displayName // empty' | sort
+    else
+        echo "$UPDATED_MEMBERS" | grep -o '"displayName":"[^"]*"' | sed 's/"displayName":"//;s/"//g' | sort
+    fi
     
     # Log the operation (ISO-27001 compliance)
     LOG_FILE="./audit-log.txt"

@@ -101,8 +101,7 @@ case $choice in
         echo ""
         cat README.md
         echo ""
-        read -p "Press Enter to continue..."
-        exec "$0"
+        echo "Press Ctrl+C to exit or run the script again to continue."
         ;;
     8)
         echo "Goodbye!"
