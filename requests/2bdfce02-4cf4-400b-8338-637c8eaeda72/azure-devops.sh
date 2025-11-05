@@ -48,7 +48,8 @@ if [ "$PAT_TOKEN" = "YOUR_PAT_TOKEN_HERE" ]; then
     echo "WARNING: PAT token not configured. Please set AZURE_DEVOPS_PAT environment variable."
     echo "You can create a PAT token at: https://dev.azure.com/$AZURE_DEVOPS_ORG/_usersSettings/tokens"
     echo ""
-    read -p "Enter PAT token (or press Enter to skip): " INPUT_PAT
+    read -s -p "Enter PAT token (or press Enter to skip): " INPUT_PAT
+    echo ""  # New line after hidden input
     if [ -n "$INPUT_PAT" ]; then
         export AZURE_DEVOPS_EXT_PAT="$INPUT_PAT"
     else
@@ -79,10 +80,13 @@ echo "Team '$AZURE_DEVOPS_TEAM' found"
 # Check if user is already a member
 echo ""
 echo "Checking if user is already a team member..."
+# Query checks for user by email or principal name
 EXISTING_MEMBER=$(az devops team list-member \
     --team "$AZURE_DEVOPS_TEAM" \
     --project "$AZURE_DEVOPS_PROJECT" \
-    --query "value[?identity.uniqueName=='$USER_EMAIL' || identity.uniqueName=='$USER_PRINCIPAL_NAME'].identity.displayName" -o tsv 2>/dev/null || echo "")
+    --query "value[?identity.uniqueName=='$USER_EMAIL' || \
+             identity.uniqueName=='$USER_PRINCIPAL_NAME'].identity.displayName" \
+    -o tsv 2>/dev/null || echo "")
 
 if [ -n "$EXISTING_MEMBER" ]; then
     echo "User is already a member of team '$AZURE_DEVOPS_TEAM'"

@@ -41,9 +41,9 @@ echo "Checking GitHub authentication..."
 if ! gh auth status &> /dev/null; then
     if [ "$GITHUB_TOKEN" != "YOUR_GITHUB_TOKEN_HERE" ]; then
         echo "Authenticating with provided token..."
-        # Use environment variable for secure authentication
+        # Use GH_TOKEN environment variable for secure authentication
         export GH_TOKEN="$GITHUB_TOKEN"
-        gh auth login --with-token <<< "$GITHUB_TOKEN"
+        gh auth status &> /dev/null || true  # GH CLI will use GH_TOKEN automatically
     else
         echo "Please login to GitHub..."
         gh auth login
