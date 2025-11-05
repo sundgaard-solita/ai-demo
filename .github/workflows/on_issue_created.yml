@@ -19,3 +19,14 @@ jobs:
           gh issue edit ${{ github.event.issue.number }} \
             --repo "${{ github.repository }}" \
             --add-assignee "Copilot (AI)"
+
+      - name: 💬 Notify Teams about Copilot result
+        if: always()
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        run: |
+          echo "Sending Teams notification..."
+          curl -X POST -H "Content-Type: application/json" \
+              -d "{\"text\":\"🤖 Copilot finished issue #${{ github.event.issue.number || 'N/A' }} in ${{ github.repository }}\"}" \
+              "$TEAMS_WEBHOOK_URL"
+
