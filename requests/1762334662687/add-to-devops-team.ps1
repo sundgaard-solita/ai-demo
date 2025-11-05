@@ -101,7 +101,7 @@ try {
     else {
         # Add user to team
         Write-Host "Adding user to team..." -ForegroundColor Yellow
-        $addMemberApiUrl = "$baseUrl/_apis/projects/$ProjectName/teams/$teamDescriptor/members/$userDescriptor`?api-version=7.1-preview.2"
+        $addMemberApiUrl = "$baseUrl/_apis/projects/$ProjectName/teams/$teamDescriptor/members/${userDescriptor}?api-version=7.1-preview.2"
         
         $response = Invoke-RestMethod -Uri $addMemberApiUrl -Headers $headers -Method Put
         

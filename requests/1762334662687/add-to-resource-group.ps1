@@ -21,22 +21,25 @@
     The Azure subscription ID.
 
 .EXAMPLE
-    .\add-to-resource-group.ps1 -UserObjectId "81330d43-ae3b-4bb1-b698-4adacf0e5bca" -ResourceGroupName "DR-Resources" -RoleName "Contributor" -SubscriptionId "<SUBSCRIPTION_ID>"
+    .\add-to-resource-group.ps1 -UserObjectId "81330d43-ae3b-4bb1-b698-4adacf0e5bca" -ResourceGroupName "DR-Resources" -RoleName "Contributor" -SubscriptionId "<SUBSCRIPTION_ID>" -TenantId "<TENANT_ID>"
 #>
 
 param(
     [Parameter(Mandatory=$true)]
-    [string]$UserObjectId = "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+    [string]$UserObjectId,
     
     [Parameter(Mandatory=$true)]
-    [string]$ResourceGroupName = "<RESOURCE_GROUP_NAME>",
+    [string]$ResourceGroupName,
     
     [Parameter(Mandatory=$false)]
     [ValidateSet("Reader", "Contributor", "Owner")]
     [string]$RoleName = "Contributor",
     
     [Parameter(Mandatory=$true)]
-    [string]$SubscriptionId = "<SUBSCRIPTION_ID>"
+    [string]$SubscriptionId,
+    
+    [Parameter(Mandatory=$true)]
+    [string]$TenantId
 )
 
 # Error handling
@@ -47,7 +50,7 @@ try {
     
     # Connect to Azure
     Write-Host "Connecting to Azure subscription: $SubscriptionId" -ForegroundColor Yellow
-    Connect-AzAccount
+    Connect-AzAccount -Tenant $TenantId
     Set-AzContext -SubscriptionId $SubscriptionId
     
     # Get the user details

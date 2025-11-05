@@ -50,42 +50,74 @@ The following resources may need to be updated:
 
 ## Execution Instructions
 
-1. Review and update placeholder values in each script:
-   - `$tenantId` - Your Azure tenant ID
-   - `$subscriptionId` - Target Azure subscription ID
-   - `$resourceGroupName` - Specific DR resource group name
-   - `$adGroupName` - Azure AD group name
-   - `$devOpsOrganization` - Azure DevOps organization name
-   - `$projectName` - Azure DevOps project name
-   - `$teamName` - Azure DevOps team name
+1. **Prepare required parameters** - All scripts require explicit parameter values:
+   - User Information:
+     - `$UserObjectId` - Azure AD Object ID: `81330d43-ae3b-4bb1-b698-4adacf0e5bca`
+     - `$UserEmail` - User email address (for DevOps scripts)
+   - Azure Configuration:
+     - `$TenantId` - Your Azure tenant ID
+     - `$SubscriptionId` - Target Azure subscription ID
+     - `$ResourceGroupName` - Specific DR resource group name
+   - Security Groups & Teams:
+     - `$ADGroupName` - Azure AD group name for DR team
+     - `$DevOpsOrg` - Azure DevOps organization name
+     - `$ProjectName` - Azure DevOps project name
+     - `$TeamName` - Azure DevOps team name
+   - Authentication:
+     - `$PAT` - Personal Access Token for Azure DevOps (keep secure!)
 
 2. Ensure you have the required permissions:
    - Azure AD administrator or User administrator role
    - Owner or User Access Administrator role on the resource group
    - Azure DevOps project administrator
 
-3. Run the scripts in order:
+3. Run the scripts in order with required parameters:
    ```powershell
    # 1. Add to Azure AD group
-   .\add-to-azure-ad-group.ps1
+   .\add-to-azure-ad-group.ps1 `
+     -UserObjectId "81330d43-ae3b-4bb1-b698-4adacf0e5bca" `
+     -GroupName "DR-Team-Members" `
+     -TenantId "<YOUR_TENANT_ID>"
    
    # 2. Add to Azure Resource Group
-   .\add-to-resource-group.ps1
+   .\add-to-resource-group.ps1 `
+     -UserObjectId "81330d43-ae3b-4bb1-b698-4adacf0e5bca" `
+     -ResourceGroupName "DR-Resources" `
+     -RoleName "Contributor" `
+     -SubscriptionId "<YOUR_SUBSCRIPTION_ID>" `
+     -TenantId "<YOUR_TENANT_ID>"
    
    # 3. Add to Azure DevOps team
-   .\add-to-devops-team.ps1
+   .\add-to-devops-team.ps1 `
+     -UserEmail "user@solita.dk" `
+     -Organization "solita-dk" `
+     -ProjectName "DR-Project" `
+     -TeamName "DR-Team" `
+     -PAT "<YOUR_PAT_TOKEN>"
    
    # 4. Verify access
-   .\verify-access.ps1
+   .\verify-access.ps1 `
+     -UserObjectId "81330d43-ae3b-4bb1-b698-4adacf0e5bca" `
+     -UserEmail "user@solita.dk" `
+     -TenantId "<YOUR_TENANT_ID>" `
+     -SubscriptionId "<YOUR_SUBSCRIPTION_ID>" `
+     -ResourceGroupName "DR-Resources" `
+     -ADGroupName "DR-Team-Members" `
+     -DevOpsOrg "solita-dk" `
+     -ProjectName "DR-Project" `
+     -TeamName "DR-Team" `
+     -PAT "<YOUR_PAT_TOKEN>"
    ```
 
 ## Security & Compliance
 
 - **ISO 27001 Compliance**: All access follows least privilege principle
+- **No Hard-coded Secrets**: All scripts require explicit parameters (no default values)
+- **Secure Authentication**: Scripts use Azure AD authentication with proper validation
 - **Access Review**: Access should be reviewed periodically
 - **Audit Trail**: All changes are logged in Azure Activity Log
-- **Authentication**: Scripts use Azure AD authentication
 - **Authorization**: Scripts verify permissions before making changes
+- **Error Handling**: Comprehensive error handling and validation in all scripts
 
 ## Notes
 

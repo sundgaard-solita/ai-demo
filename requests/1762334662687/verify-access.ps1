@@ -46,34 +46,34 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [string]$UserObjectId = "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+    [string]$UserObjectId,
     
     [Parameter(Mandatory=$true)]
-    [string]$UserEmail = "<USER_EMAIL>@solita.dk",
+    [string]$UserEmail,
     
     [Parameter(Mandatory=$true)]
-    [string]$TenantId = "<TENANT_ID>",
+    [string]$TenantId,
     
     [Parameter(Mandatory=$true)]
-    [string]$SubscriptionId = "<SUBSCRIPTION_ID>",
+    [string]$SubscriptionId,
     
     [Parameter(Mandatory=$true)]
-    [string]$ResourceGroupName = "<RESOURCE_GROUP_NAME>",
+    [string]$ResourceGroupName,
     
     [Parameter(Mandatory=$true)]
-    [string]$ADGroupName = "<AD_GROUP_NAME>",
+    [string]$ADGroupName,
     
     [Parameter(Mandatory=$true)]
-    [string]$DevOpsOrg = "<DEVOPS_ORG>",
+    [string]$DevOpsOrg,
     
     [Parameter(Mandatory=$true)]
-    [string]$ProjectName = "<PROJECT_NAME>",
+    [string]$ProjectName,
     
     [Parameter(Mandatory=$true)]
-    [string]$TeamName = "<TEAM_NAME>",
+    [string]$TeamName,
     
     [Parameter(Mandatory=$true)]
-    [string]$PAT = "<PAT_TOKEN>"
+    [string]$PAT
 )
 
 # Error handling
@@ -89,8 +89,19 @@ Write-Host ""
 try {
     # Connect to Azure
     Write-Host "Connecting to Azure..." -ForegroundColor Yellow
-    Connect-AzAccount -Tenant $TenantId
-    Set-AzContext -SubscriptionId $SubscriptionId
+    $connection = Connect-AzAccount -Tenant $TenantId
+    
+    if ($null -eq $connection) {
+        throw "Failed to connect to Azure. Please check your credentials and tenant ID."
+    }
+    
+    $context = Set-AzContext -SubscriptionId $SubscriptionId
+    
+    if ($null -eq $context) {
+        throw "Failed to set Azure context. Please check your subscription ID."
+    }
+    
+    Write-Host "Successfully connected to Azure tenant: $TenantId" -ForegroundColor Green
     
     # Get user info
     $user = Get-AzADUser -ObjectId $UserObjectId

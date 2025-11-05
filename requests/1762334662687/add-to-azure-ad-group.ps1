@@ -23,13 +23,13 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [string]$UserObjectId = "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+    [string]$UserObjectId,
     
     [Parameter(Mandatory=$true)]
-    [string]$GroupName = "<AD_GROUP_NAME>",
+    [string]$GroupName,
     
     [Parameter(Mandatory=$true)]
-    [string]$TenantId = "<TENANT_ID>"
+    [string]$TenantId
 )
 
 # Error handling
