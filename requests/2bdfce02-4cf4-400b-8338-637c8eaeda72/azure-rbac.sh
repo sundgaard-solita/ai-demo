@@ -14,7 +14,6 @@ TENANT_ID="${AZURE_TENANT_ID:-635aa01e-f19d-49ec-8aed-4b2e4312a627}"
 SUBSCRIPTION_NAME_OR_ID="${SUBSCRIPTION_NAME_OR_ID:-BDK7}"
 RESOURCE_GROUP_NAME="${RESOURCE_GROUP_NAME:-BDK7}"
 USER_EMAIL="mrs@solita.dk"
-USER_PRINCIPAL_NAME="${USER_EMAIL}"
 ROLE="${AZURE_ROLE:-Reader}" # Options: Owner, Contributor, Reader
 
 # Display script information
