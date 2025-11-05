@@ -50,16 +50,15 @@ if [ "$PAT_TOKEN" = "YOUR_PAT_TOKEN_HERE" ]; then
     echo ""
     read -p "Enter PAT token (or press Enter to skip): " INPUT_PAT
     if [ -n "$INPUT_PAT" ]; then
-        PAT_TOKEN="$INPUT_PAT"
+        export AZURE_DEVOPS_EXT_PAT="$INPUT_PAT"
     else
         echo "Skipping authentication. Script will continue but may fail without valid credentials."
     fi
+else
+    export AZURE_DEVOPS_EXT_PAT="$PAT_TOKEN"
 fi
 
-# Login with PAT token
-if [ "$PAT_TOKEN" != "YOUR_PAT_TOKEN_HERE" ]; then
-    echo "$PAT_TOKEN" | az devops login --organization "https://dev.azure.com/$AZURE_DEVOPS_ORG"
-fi
+# Azure DevOps CLI will automatically use AZURE_DEVOPS_EXT_PAT environment variable
 
 # Check if team exists
 echo ""
@@ -83,7 +82,7 @@ echo "Checking if user is already a team member..."
 EXISTING_MEMBER=$(az devops team list-member \
     --team "$AZURE_DEVOPS_TEAM" \
     --project "$AZURE_DEVOPS_PROJECT" \
-    --query "value[?identity.uniqueName=='$USER_EMAIL'].identity.displayName" -o tsv 2>/dev/null || echo "")
+    --query "value[?identity.uniqueName=='$USER_EMAIL' || identity.uniqueName=='$USER_PRINCIPAL_NAME'].identity.displayName" -o tsv 2>/dev/null || echo "")
 
 if [ -n "$EXISTING_MEMBER" ]; then
     echo "User is already a member of team '$AZURE_DEVOPS_TEAM'"

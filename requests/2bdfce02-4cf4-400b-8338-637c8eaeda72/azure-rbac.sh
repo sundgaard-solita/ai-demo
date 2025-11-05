@@ -71,11 +71,19 @@ fi
 # Check if user already has the role assignment
 echo ""
 echo "Checking existing role assignments for user..."
-EXISTING_ROLE=$(az role assignment list \
+if az role assignment list \
     --assignee "$USER_EMAIL" \
     --scope "$SCOPE" \
     --role "$ROLE" \
-    --query "[].roleDefinitionName" -o tsv 2>/dev/null || echo "")
+    --query "[].roleDefinitionName" -o tsv > /dev/null 2>&1; then
+    EXISTING_ROLE=$(az role assignment list \
+        --assignee "$USER_EMAIL" \
+        --scope "$SCOPE" \
+        --role "$ROLE" \
+        --query "[].roleDefinitionName" -o tsv)
+else
+    EXISTING_ROLE=""
+fi
 
 if [ -n "$EXISTING_ROLE" ]; then
     echo "User already has $ROLE role on $SCOPE_TYPE: $SCOPE"

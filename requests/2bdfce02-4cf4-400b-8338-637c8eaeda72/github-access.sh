@@ -41,7 +41,9 @@ echo "Checking GitHub authentication..."
 if ! gh auth status &> /dev/null; then
     if [ "$GITHUB_TOKEN" != "YOUR_GITHUB_TOKEN_HERE" ]; then
         echo "Authenticating with provided token..."
-        echo "$GITHUB_TOKEN" | gh auth login --with-token
+        # Use environment variable for secure authentication
+        export GH_TOKEN="$GITHUB_TOKEN"
+        gh auth login --with-token <<< "$GITHUB_TOKEN"
     else
         echo "Please login to GitHub..."
         gh auth login
@@ -54,13 +56,19 @@ fi
 echo ""
 echo "Determining if BDK7 is an organization or repository..."
 
-# Check if it's an organization
-if gh api "/orgs/$GITHUB_REPO" &> /dev/null; then
+# Check if BDK7 itself is an organization
+BDK7_NAME="BDK7"
+if gh api "/orgs/$BDK7_NAME" &> /dev/null; then
     echo "BDK7 is a GitHub organization"
     TARGET_TYPE="organization"
-    TARGET_NAME="$GITHUB_REPO"
+    TARGET_NAME="$BDK7_NAME"
+elif gh api "/repos/$GITHUB_ORG/$GITHUB_REPO" &> /dev/null; then
+    echo "BDK7 is a repository under organization: $GITHUB_ORG"
+    TARGET_TYPE="repository"
+    TARGET_NAME="$GITHUB_ORG/$GITHUB_REPO"
 else
-    echo "BDK7 is likely a repository (or checking within $GITHUB_ORG organization)"
+    echo "Could not determine if BDK7 is an organization or repository"
+    echo "Assuming it's a repository under organization: $GITHUB_ORG"
     TARGET_TYPE="repository"
     TARGET_NAME="$GITHUB_ORG/$GITHUB_REPO"
 fi
