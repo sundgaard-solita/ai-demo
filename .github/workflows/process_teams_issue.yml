@@ -1,0 +1,92 @@
+name: Process Teams Message Issues
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  process-teams-message:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Process issue content
+        id: process
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          # Save issue body to file to avoid shell escaping issues
+          printf '%s' "$ISSUE_BODY" > issue_body.txt
+          
+          echo "Original issue title: $ISSUE_TITLE"
+          echo "Processing issue body..."
+          
+          # Run the Python script to process the Teams message
+          python3 process_teams_issue.py "$(cat issue_body.txt)" > result.json
+          
+          echo "Processing result:"
+          cat result.json
+          
+          # Extract results from JSON
+          IS_TEAMS_MESSAGE=$(jq -r '.is_teams_message' result.json)
+          PARSE_ERROR=$(jq -r '.parse_error' result.json)
+          NEW_TITLE=$(jq -r '.title // empty' result.json)
+          NEW_DESCRIPTION=$(jq -r '.description // empty' result.json)
+          
+          # Output for next step
+          echo "is_teams_message=$IS_TEAMS_MESSAGE" >> $GITHUB_OUTPUT
+          echo "parse_error=$PARSE_ERROR" >> $GITHUB_OUTPUT
+          
+          # Save title and description to files for the update step
+          if [ "$IS_TEAMS_MESSAGE" = "true" ] && [ "$PARSE_ERROR" = "false" ]; then
+            echo "$NEW_TITLE" > new_title.txt
+            echo "$NEW_DESCRIPTION" > new_description.txt
+            echo "should_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_update=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update issue
+        if: steps.process.outputs.should_update == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_TITLE=$(cat new_title.txt)
+          NEW_DESCRIPTION=$(cat new_description.txt)
+          
+          echo "Updating issue #${{ github.event.issue.number }}..."
+          echo "New title: $NEW_TITLE"
+          
+          # Update the issue using GitHub CLI
+          gh api --method PATCH \
+            repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+            -f title="$NEW_TITLE" \
+            -f body="$NEW_DESCRIPTION"
+          
+          echo "✅ Issue updated successfully"
+
+      - name: Add label
+        if: steps.process.outputs.should_update == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Add a label to indicate this was processed from Teams
+          gh api --method POST \
+            repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/labels \
+            -f labels[]="teams-message" || echo "Label 'teams-message' may not exist, skipping..."
+
+      - name: Skip update
+        if: steps.process.outputs.should_update == 'false'
+        run: |
+          echo "ℹ️  Issue does not appear to be a Teams message or parsing failed. No update needed."
