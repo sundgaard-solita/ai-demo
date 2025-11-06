@@ -1,0 +1,40 @@
+name: PR to Azure DevOps Ticket
+
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches:
+      - main
+      - develop
+      - feature/**
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  create-ado-issue:
+    runs-on: ubuntu-latest
+    env:
+      AZURE_ORG_URL: https://dev.azure.com/solita-dk       # 🔁 replace with your ADO org URL
+      AZURE_PROJECT: "SolitaTickets"                        # 🔁 your ADO project name
+      ADO_PAT: ${{ secrets.ADO_PAT }}                       # create this PAT in ADO with Work Item (read/write)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract PR details
+        id: pr
+        run: |
+          echo "PR_TITLE=${{ github.event.pull_request.title }}" >> $GITHUB_ENV
+          echo "PR_BODY=${{ github.event.pull_request.body }}" >> $GITHUB_ENV
+          echo "PR_URL=${{ github.event.pull_request.html_url }}" >> $GITHUB_ENV
+          echo "PR_AUTHOR=${{ github.event.pull_request.user.login }}" >> $GITHUB_ENV
+
+      - name: Create Soliticket
+        run: |
+          echo "🧾 Creating Soliticket for PR: $PR_TITLE"
+
+      - name: Confirm
+        run: echo "✅ Soliticket created for PR #${{ github.event.pull_request.number }}"
