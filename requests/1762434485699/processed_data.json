@@ -1,0 +1,33 @@
+{
+  "requestId": "1762434485699",
+  "processedAt": "2025-11-06T13:11:12.722Z",
+  "source": "Microsoft Teams",
+  "sender": {
+    "name": "Michael Ringholm Sundgaard",
+    "id": "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+    "tenantId": "635aa01e-f19d-49ec-8aed-4b2e4312a627"
+  },
+  "message": {
+    "timestamp": "2025-11-06T13:08:05.699Z",
+    "content": "PR ligger klar i GitHub.",
+    "contentPlain": "PR ligger klar i GitHub.",
+    "contentEnglish": "PR is ready in GitHub"
+  },
+  "issue": {
+    "title": "PR Ready in GitHub - Message from Michael Ringholm Sundgaard",
+    "description": "## Message Summary\nPR is ready in GitHub.\n\n## Details\n- **From**: Michael Ringholm Sundgaard\n- **Date**: November 6, 2025 at 13:08 UTC\n- **Original Message**: PR ligger klar i GitHub. (Danish: \"PR is ready in GitHub\")\n\n## Action Items\n- [ ] Review the PR mentioned in GitHub\n\n---\n*This issue was automatically created from a Microsoft Teams message (ID: 1762434485699)*"
+  },
+  "actionItems": [
+    {
+      "description": "Review the PR mentioned in GitHub",
+      "status": "pending"
+    }
+  ],
+  "metadata": {
+    "teamId": "45500773-64be-4e45-9aeb-0922cdb2f616",
+    "channelId": "19:3a3f2ddfdac14235bd81c8d7cc642cd2@thread.skype",
+    "messageType": "message",
+    "importance": "normal",
+    "locale": "en-us"
+  }
+}
