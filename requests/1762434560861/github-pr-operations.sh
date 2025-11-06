@@ -6,10 +6,10 @@
 set -euo pipefail
 
 # Configuration (use placeholders for now as per instructions)
-GITHUB_TOKEN="${GITHUB_TOKEN:-PAT_TOKEN_PLACEHOLDER}"
+GITHUB_TOKEN="${GITHUB_TOKEN:-REPLACE_WITH_YOUR_GITHUB_PAT}"
 GITHUB_ORG="${GITHUB_ORG:-sundgaard-solita}"
-GITHUB_REPO="${GITHUB_REPO:-REPO_NAME_PLACEHOLDER}"
-PR_NUMBER="${PR_NUMBER:-PR_NUMBER_PLACEHOLDER}"
+GITHUB_REPO="${GITHUB_REPO:-REPLACE_WITH_REPO_NAME}"
+PR_NUMBER="${PR_NUMBER:-REPLACE_WITH_ACTUAL_PR_NUMBER}"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -27,14 +27,23 @@ echo ""
 check_pr() {
     echo -e "${YELLOW}Checking PR #${PR_NUMBER}...${NC}"
     
-    if [ "$GITHUB_TOKEN" = "PAT_TOKEN_PLACEHOLDER" ]; then
+    if [ "$GITHUB_TOKEN" = "REPLACE_WITH_YOUR_GITHUB_PAT" ]; then
         echo -e "${RED}⚠️  GITHUB_TOKEN not configured. Set it as an environment variable.${NC}"
         echo "Example: export GITHUB_TOKEN='your_personal_access_token'"
         return 1
     fi
     
-    PR_DATA=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+    HTTP_STATUS=$(curl -s -w "%{http_code}" -o pr_response.json \
+        -H "Authorization: token $GITHUB_TOKEN" \
         "https://api.github.com/repos/$GITHUB_ORG/$GITHUB_REPO/pulls/$PR_NUMBER")
+    
+    if [ "$HTTP_STATUS" != "200" ]; then
+        echo -e "${RED}❌ Failed to fetch PR (HTTP $HTTP_STATUS)${NC}"
+        cat pr_response.json 2>/dev/null || echo "No response data"
+        return 1
+    fi
+    
+    PR_DATA=$(cat pr_response.json)
     
     PR_TITLE=$(echo "$PR_DATA" | jq -r '.title')
     PR_STATE=$(echo "$PR_DATA" | jq -r '.state')
@@ -95,11 +104,20 @@ notify_teams() {
     
     echo -e "${YELLOW}Sending Teams notification...${NC}"
     
-    curl -X POST -H "Content-Type: application/json" \
-        -d "{\"text\":\"$message\"}" \
-        "$webhook_url"
+    # Properly escape message for JSON using jq
+    local payload=$(jq -n --arg text "$message" '{text: $text}')
     
-    echo -e "${GREEN}✅ Teams notification sent${NC}"
+    HTTP_STATUS=$(curl -s -w "%{http_code}" -o /dev/null \
+        -X POST \
+        -H "Content-Type: application/json" \
+        -d "$payload" \
+        "$webhook_url")
+    
+    if [[ "$HTTP_STATUS" =~ ^2 ]]; then
+        echo -e "${GREEN}✅ Teams notification sent (HTTP $HTTP_STATUS)${NC}"
+    else
+        echo -e "${RED}⚠️  Teams notification failed (HTTP $HTTP_STATUS)${NC}"
+    fi
 }
 
 # Main execution
@@ -108,7 +126,7 @@ main() {
     echo ""
     
     # Check if required variables are set
-    if [ "$GITHUB_TOKEN" = "PAT_TOKEN_PLACEHOLDER" ]; then
+    if [ "$GITHUB_TOKEN" = "REPLACE_WITH_YOUR_GITHUB_PAT" ]; then
         echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo -e "${YELLOW}⚠️  Configuration Required${NC}"
         echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

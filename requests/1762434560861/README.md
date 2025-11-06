@@ -2,7 +2,7 @@
 
 **Request ID:** 1762434560861  
 **Created:** 2025-11-06T13:09:20.861Z  
-**From:** Michael Ringholm Sundgaard (michael.sundgaard@solita.dk)  
+**From:** Michael Ringholm Sundgaard  
 **Channel:** Microsoft Teams (Solita Denmark)
 
 ## Summary
