@@ -1,0 +1,55 @@
+{
+  "requestId": "1762434546920",
+  "type": "teams-message",
+  "category": "notification",
+  "subcategory": "pr-ready",
+  "status": "processed",
+  "createdAt": "2025-11-06T13:09:06.92Z",
+  "processedAt": "2025-11-06T13:10:05.673Z",
+  "message": {
+    "original": "PR ligger klar i GitHub.",
+    "translated": "PR is ready in GitHub.",
+    "language": "da"
+  },
+  "sender": {
+    "name": "Michael Ringholm Sundgaard",
+    "userId": "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+    "email": null,
+    "tenantId": "635aa01e-f19d-49ec-8aed-4b2e4312a627"
+  },
+  "teams": {
+    "messageId": "1762434546920",
+    "teamId": "45500773-64be-4e45-9aeb-0922cdb2f616",
+    "channelId": "19:3a3f2ddfdac14235bd81c8d7cc642cd2@thread.skype",
+    "messageLink": "https://teams.microsoft.com/l/message/19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype/1762434546920?groupId=45500773-64be-4e45-9aeb-0922cdb2f616&tenantId=635aa01e-f19d-49ec-8aed-4b2e4312a627&createdTime=1762434546920&parentMessageId=1762434546920"
+  },
+  "actionItems": [
+    {
+      "id": 1,
+      "description": "Locate the mentioned Pull Request in GitHub",
+      "status": "pending",
+      "priority": "high",
+      "assignee": null
+    },
+    {
+      "id": 2,
+      "description": "Review the Pull Request content",
+      "status": "pending",
+      "priority": "high",
+      "assignee": null
+    },
+    {
+      "id": 3,
+      "description": "Provide feedback or approve the PR",
+      "status": "pending",
+      "priority": "medium",
+      "assignee": null
+    }
+  ],
+  "tags": [
+    "teams-notification",
+    "pr-review",
+    "github",
+    "automated"
+  ]
+}
