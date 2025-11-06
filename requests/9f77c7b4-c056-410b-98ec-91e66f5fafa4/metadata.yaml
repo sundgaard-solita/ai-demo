@@ -1,0 +1,14 @@
+request_id: 9f77c7b4-c056-410b-98ec-91e66f5fafa4
+message_id: "1762434417208"
+timestamp: "2025-11-06T13:06:57.208Z"
+sender:
+  name: "Michael Ringholm Sundgaard"
+  id: "81330d43-ae3b-4bb1-b698-4adacf0e5bca"
+  tenant_id: "635aa01e-f19d-49ec-8aed-4b2e4312a627"
+team:
+  id: "45500773-64be-4e45-9aeb-0922cdb2f616"
+  channel_id: "19:3a3f2ddfdac14235bd81c8d7cc642cd2@thread.skype"
+message:
+  original: "PR ligger klar i GitHub."
+  translated: "PR is ready in GitHub."
+  language: "da"
