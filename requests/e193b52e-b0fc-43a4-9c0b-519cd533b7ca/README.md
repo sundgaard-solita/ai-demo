@@ -35,6 +35,8 @@ Michael Ringholm Sundgaard has notified the team that a Pull Request is ready fo
 
 - [View in Teams](https://teams.microsoft.com/l/message/19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype/1762434322514?groupId=45500773-64be-4e45-9aeb-0922cdb2f616&tenantId=635aa01e-f19d-49ec-8aed-4b2e4312a627&createdTime=1762434322514&parentMessageId=1762434322514)
 
+> **Security Note:** The Teams URL contains organizational identifiers (tenant ID, group ID, channel ID) that are part of the original message metadata. Access to these resources requires proper Azure AD authentication and authorization. These identifiers are preserved for audit trail and traceability purposes.
+
 ## Notes
 
 This is a notification from a Solita Denmark IT employee regarding GitHub workflow activities. The message indicates that development work has been completed and is ready for code review.
