@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Azure DevOps PR Review Script
 # This script can be used to interact with Azure DevOps PRs
 #

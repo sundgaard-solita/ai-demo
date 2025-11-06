@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # GitHub PR Review Script
 # This script can be used to interact with GitHub PRs when a notification is received from Teams
 #
