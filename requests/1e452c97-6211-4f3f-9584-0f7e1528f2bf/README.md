@@ -34,3 +34,36 @@ This request was received via Microsoft Teams and forwarded for tracking and act
 - `README.md` - This file, containing the request summary and action items
 - `raw-input.json` - The original raw Teams message JSON
 - `processed-issue.md` - The processed and formatted issue content
+- `pr-review-automation.sh` - Automation script for PR review workflows
+- `update-github-issue.sh` - Script to update the GitHub issue with processed content
+
+## Usage
+
+### Update GitHub Issue
+```bash
+cd requests/1e452c97-6211-4f3f-9584-0f7e1528f2bf
+export GITHUB_TOKEN=your_personal_access_token
+export ISSUE_NUMBER=issue_number
+./update-github-issue.sh
+```
+
+### PR Review Automation
+```bash
+cd requests/1e452c97-6211-4f3f-9584-0f7e1528f2bf
+export GITHUB_TOKEN=your_personal_access_token
+
+# List open PRs
+./pr-review-automation.sh
+
+# Assign reviewers to a specific PR
+./pr-review-automation.sh assign_reviewers <PR_NUMBER> <REVIEWER1> <REVIEWER2>
+
+# Check compliance for a PR
+./pr-review-automation.sh check_compliance <PR_NUMBER>
+```
+
+## Security Notes
+- All scripts use placeholder values for sensitive tokens
+- Follow least privilege principles when configuring access tokens
+- Ensure ISO-27001 compliance when handling sensitive data
+- Review all automation scripts before execution in production
