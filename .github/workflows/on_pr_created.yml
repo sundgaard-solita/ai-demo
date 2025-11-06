@@ -39,7 +39,7 @@ jobs:
             -H "Content-Type: application/json" \
             -d "$(jq -n \
               --arg title "$PR_TITLE" \
-              --arg description "Author: $PR_AUTHOR\nURL: $PR_URL\n\n$PR_BODY" \
+              --arg desc "Author: $PR_AUTHOR\nURL: $PR_URL\n\n$PR_BODY" \
               '{title: $title, description: $desc}')"
 
           echo "✅ Soliticket POST request sent"
