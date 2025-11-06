@@ -44,6 +44,3 @@ jobs:
 
           echo "✅ Soliticket POST request sent"
 
-
-      - name: Confirm
-        run: echo "✅ Soliticket created for PR #${{ github.event.pull_request.number }}"
