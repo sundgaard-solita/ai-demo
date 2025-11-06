@@ -72,7 +72,7 @@ def test_non_json_input():
 
 def test_sample_file():
     """Test with the sample file."""
-    with open('samples/sample-input1.jsonl', 'r') as f:
+    with open('samples/sample-input1.jsonl', 'r', encoding='utf-8') as f:
         sample_data = f.read()
     
     result = subprocess.run(

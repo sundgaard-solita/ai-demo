@@ -11,7 +11,20 @@ from datetime import datetime
 
 
 def extract_teams_message(raw_json_str):
-    """Extract meaningful information from Teams message JSON."""
+    """
+    Extract meaningful information from Teams message JSON.
+    
+    Args:
+        raw_json_str: Raw JSON string from Teams webhook. Expected structure:
+            [{"body": {"from": {"user": {"displayName": str}}, 
+                      "body": {"plainTextContent": str, "content": str},
+                      "createdDateTime": str,
+                      "webUrl": str}}]
+    
+    Returns:
+        dict with keys: sender, date, plain_text, html_content, message_link
+        or None if parsing fails
+    """
     try:
         # Parse the JSON array
         data = json.loads(raw_json_str)
@@ -53,8 +66,11 @@ def extract_teams_message(raw_json_str):
                     'html_content': html_content,
                     'message_link': message_link
                 }
-    except (json.JSONDecodeError, KeyError, TypeError) as e:
-        print(f"Error parsing Teams message: {e}", file=sys.stderr)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON: {e}", file=sys.stderr)
+        return None
+    except (KeyError, TypeError, AttributeError) as e:
+        print(f"Error extracting Teams message fields: {e}", file=sys.stderr)
         return None
     
     return None
@@ -132,9 +148,15 @@ def main():
     
     raw_body = sys.argv[1]
     
-    # Try to detect if this is a Teams message JSON
-    if not (raw_body.strip().startswith('[{') or raw_body.strip().startswith('{')):
-        # Not JSON, might already be formatted
+    # Try to detect if this is a Teams message JSON by attempting to parse it
+    try:
+        # Try parsing as JSON first
+        test_parse = json.loads(raw_body)
+        # Check if it has Teams message structure
+        if not isinstance(test_parse, (list, dict)):
+            raise ValueError("Not a Teams message structure")
+    except (json.JSONDecodeError, ValueError):
+        # Not JSON or not Teams message format
         print("Issue body doesn't appear to be Teams JSON format.", file=sys.stderr)
         print(json.dumps({
             'title': None,

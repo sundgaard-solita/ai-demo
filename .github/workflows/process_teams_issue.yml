@@ -81,10 +81,35 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Add a label to indicate this was processed from Teams
-          gh api --method POST \
+          # Try to add label, create it if it doesn't exist
+          if ! gh api --method POST \
             repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/labels \
-            -f labels[]="teams-message" || echo "Label 'teams-message' may not exist, skipping..."
+            -f labels[]="teams-message" 2>/dev/null; then
+            
+            echo "Label 'teams-message' doesn't exist, attempting to create it..."
+            
+            # Try to create the label
+            if gh api --method POST \
+              repos/${{ github.repository }}/labels \
+              -f name="teams-message" \
+              -f color="0366d6" \
+              -f description="Issue created from Microsoft Teams message" 2>/dev/null; then
+              
+              echo "✅ Label created successfully"
+              
+              # Now add it to the issue
+              gh api --method POST \
+                repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/labels \
+                -f labels[]="teams-message"
+              
+              echo "✅ Label added to issue"
+            else
+              echo "⚠️  Could not create label. This may be due to insufficient permissions."
+              echo "Consider creating the 'teams-message' label manually in repository settings."
+            fi
+          else
+            echo "✅ Label added to issue"
+          fi
 
       - name: Skip update
         if: steps.process.outputs.should_update == 'false'
