@@ -7,7 +7,6 @@ set -e
 # Configuration
 REQUEST_ID="99f61942-2006-4948-9f8a-e105286de6b0"
 USER_NAME="Michael Ringholm Sundgaard"
-USER_ID="81330d43-ae3b-4bb1-b698-4adacf0e5bca"
 PR_NUMBER="${1:-unknown}"
 ACTION="${2:-reviewed}"
 
