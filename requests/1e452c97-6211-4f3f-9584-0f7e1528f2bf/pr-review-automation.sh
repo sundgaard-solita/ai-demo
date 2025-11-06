@@ -12,9 +12,9 @@ TEAMS_WEBHOOK_URL="${TEAMS_WEBHOOK_URL:-YOUR_TEAMS_WEBHOOK_URL}"
 
 # Request tracking
 REQUEST_ID="1e452c97-6211-4f3f-9584-0f7e1528f2bf"
-MESSAGE_ID="1762434054659"
+MESSAGE_ID="1762434054659"  # Teams message ID for reference
 REQUESTER="Michael Ringholm Sundgaard"
-TENANT_ID="635aa01e-f19d-49ec-8aed-4b2e4312a627"
+TENANT_ID="635aa01e-f19d-49ec-8aed-4b2e4312a627"  # Azure tenant ID for reference
 
 # Function to find open PRs in the repository
 find_open_prs() {
