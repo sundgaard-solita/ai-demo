@@ -1,4 +1,4 @@
-name: PR to Azure DevOps Ticket
+name: PR to Soliticket
 
 on:
   pull_request:
@@ -16,9 +16,8 @@ jobs:
   create-ado-issue:
     runs-on: ubuntu-latest
     env:
-      AZURE_ORG_URL: https://dev.azure.com/solita-dk       # 🔁 replace with your ADO org URL
-      AZURE_PROJECT: "SolitaTickets"                        # 🔁 your ADO project name
-      ADO_PAT: ${{ secrets.ADO_PAT }}                       # create this PAT in ADO with Work Item (read/write)
+      SOLITICKET_URL: https://support.solita.dk/api/ai-coding-automation/createWorkItem?code=
+      SOLITICKET_SECRET: ${{ secrets.SOLITICKET_SECRET }}  
 
     steps:
       - name: Checkout
@@ -35,6 +34,16 @@ jobs:
       - name: Create Soliticket
         run: |
           echo "🧾 Creating Soliticket for PR: $PR_TITLE"
+
+          curl -s -X POST "${SOLITICKET_URL}${SOLITICKET_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg title "$PR_TITLE" \
+              --arg description "Author: $PR_AUTHOR\nURL: $PR_URL\n\n$PR_BODY" \
+              '{title: $title, description: $desc}')"
+
+          echo "✅ Soliticket POST request sent"
+
 
       - name: Confirm
         run: echo "✅ Soliticket created for PR #${{ github.event.pull_request.number }}"
