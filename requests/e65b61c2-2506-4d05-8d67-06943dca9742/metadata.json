@@ -1,0 +1,42 @@
+{
+  "requestId": "e65b61c2-2506-4d05-8d67-06943dca9742",
+  "source": "Microsoft Teams",
+  "timestamp": "2025-11-06T13:07:44.173Z",
+  "sender": {
+    "displayName": "Michael Ringholm Sundgaard",
+    "id": "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+    "email": "michael.ringholm.sundgaard@solita.dk",
+    "tenantId": "635aa01e-f19d-49ec-8aed-4b2e4312a627",
+    "userType": "aadUser"
+  },
+  "message": {
+    "original": "PR ligger klar i GitHub",
+    "translation": "PR is ready in GitHub",
+    "language": "da",
+    "id": "1762434464173",
+    "type": "channel-message",
+    "contentType": "html",
+    "importance": "normal",
+    "locale": "en-us"
+  },
+  "team": {
+    "teamId": "45500773-64be-4e45-9aeb-0922cdb2f616",
+    "channelId": "19:3a3f2ddfdac14235bd81c8d7cc642cd2@thread.skype",
+    "threadType": "channel"
+  },
+  "actionItems": [
+    "Review the pull request in GitHub",
+    "Verify changes comply with coding standards",
+    "Check for security or compliance issues",
+    "Approve or request changes",
+    "Merge if approved"
+  ],
+  "status": "pending",
+  "category": "code-review",
+  "priority": "normal",
+  "compliance": {
+    "iso27001": true,
+    "securityScanning": "required",
+    "privilegeLevel": "least-privilege"
+  }
+}
