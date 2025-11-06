@@ -58,7 +58,7 @@ gh pr view "$PR_NUMBER" --repo "$REPO"
 # Show PR diff summary
 echo ""
 echo -e "${YELLOW}PR Changes Summary:${NC}"
-gh pr diff "$PR_NUMBER" --repo "$REPO" | head -100
+gh pr diff "$PR_NUMBER" --repo "$REPO" | head -500
 
 # Check PR status
 echo ""
@@ -97,7 +97,7 @@ case $CHOICE in
         ;;
     4)
         read -p "Are you sure you want to merge? (y/n): " CONFIRM
-        if [ "$CONFIRM" = "y" ]; then
+        if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
             gh pr merge "$PR_NUMBER" --repo "$REPO" --merge
             echo -e "${GREEN}PR merged!${NC}"
         else

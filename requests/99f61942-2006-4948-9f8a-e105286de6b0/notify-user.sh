@@ -5,7 +5,6 @@
 set -e
 
 # Configuration
-TEAMS_WEBHOOK_URL="${TEAMS_WEBHOOK_URL}"
 REQUEST_ID="99f61942-2006-4948-9f8a-e105286de6b0"
 USER_NAME="Michael Ringholm Sundgaard"
 USER_ID="81330d43-ae3b-4bb1-b698-4adacf0e5bca"
@@ -98,7 +97,7 @@ EOF
 
 # Send notification to Teams
 echo -e "${YELLOW}Sending notification to Teams...${NC}"
-RESPONSE=$(curl -s -w "\n%{http_code}" -X POST -H "Content-Type: application/json" -d "$TEAMS_MESSAGE" "$TEAMS_WEBHOOK_URL")
+RESPONSE=$(curl -s -w "\n%{http_code}" --connect-timeout 30 --max-time 60 -X POST -H "Content-Type: application/json" -d "$TEAMS_MESSAGE" "$TEAMS_WEBHOOK_URL")
 
 HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 
