@@ -9,6 +9,11 @@ import sys
 from typing import Dict, Any, Optional
 
 
+# Constants for title formatting
+MAX_TITLE_LENGTH = 60
+TITLE_TRUNCATE_LENGTH = 57  # Leave 3 chars for "..."
+
+
 def extract_teams_message(raw_content: str) -> Optional[Dict[str, Any]]:
     """
     Extract Teams message data from raw JSON content.
@@ -74,10 +79,10 @@ def format_as_markdown(message_data: Dict[str, Any]) -> tuple[str, str]:
     message_link = message_data.get('message_link', '')
     
     # Create a title from the message content
-    # Limit to first sentence or 60 characters
+    # Limit to first sentence or MAX_TITLE_LENGTH characters
     title = plain_text
-    if len(title) > 60:
-        title = title[:57] + '...'
+    if len(title) > MAX_TITLE_LENGTH:
+        title = title[:TITLE_TRUNCATE_LENGTH] + '...'
     elif '.' in title:
         title = title.split('.')[0]
     

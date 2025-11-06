@@ -25,7 +25,7 @@ def test_teams_message_processing():
     output = json.loads(result.stdout)
     
     # Assertions
-    assert output['is_teams_message'] == True, "Should detect Teams message"
+    assert output['is_teams_message'] is True, "Should detect Teams message"
     assert output['title'] == "PR ligger klar i GitHub", f"Unexpected title: {output['title']}"
     assert output['plain_text'] == "PR ligger klar i GitHub.", f"Unexpected plain text: {output['plain_text']}"
     assert 'Michael Ringholm Sundgaard' in output['description'], "Should include sender name"
@@ -50,7 +50,7 @@ def test_non_teams_content():
     output = json.loads(result.stdout)
     
     # Assertions
-    assert output['is_teams_message'] == False, "Should not detect Teams message in regular text"
+    assert output['is_teams_message'] is False, "Should not detect Teams message in regular text"
     
     print("✅ Test 2: Non-Teams content detection - PASSED")
 
