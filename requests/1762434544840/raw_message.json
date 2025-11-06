@@ -1,1 +1,73 @@
-[{"statusCode":200,"headers":{"Transfer-Encoding":"chunked","Vary":"Accept-Encoding","Strict-Transport-Security":"max-age=31536000","request-id":"02fdd9b6-0c25-440c-8e3b-cf4b492e5801","client-request-id":"02fdd9b6-0c25-440c-8e3b-cf4b492e5801","x-ms-ags-diagnostic":"{\"ServerInfo\":{\"DataCenter\":\"West Europe\",\"Slice\":\"E\",\"Ring\":\"5\",\"ScaleUnit\":\"001\",\"RoleInstance\":\"AM4PEPF00068B5A\"}}","OData-Version":"4.0","x-ms-environment-id":"default-635aa01e-f19d-49ec-8aed-4b2e4312a627","x-ms-tenant-id":"635aa01e-f19d-49ec-8aed-4b2e4312a627","x-ms-dlp-re":"-|-","x-ms-dlp-gu":"-|-","x-ms-dlp-ef":"-|-/-|-|-","x-ms-mip-sl":"-|-|-|-","x-ms-au-creator-id":"81330d43-ae3b-4bb1-b698-4adacf0e5bca","Timing-Allow-Origin":"*","x-ms-apihub-cached-response":"true","x-ms-apihub-obo":"false","Date":"Thu, 06 Nov 2025 13:09:04 GMT","Content-Type":"application/json","Content-Length":"2043"},"body":{"@odata.context":"https://graph.microsoft.com/v1.0/$metadata#teams('45500773-64be-4e45-9aeb-0922cdb2f616')/channels('19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype')/messages/$entity","id":"1762434544840","replyToId":"1762434544840","etag":"1762434544840","messageType":"message","createdDateTime":"2025-11-06T13:09:04.84Z","lastModifiedDateTime":"2025-11-06T13:09:04.84Z","lastEditedDateTime":null,"deletedDateTime":null,"subject":null,"summary":null,"chatId":null,"importance":"normal","locale":"en-us","webUrl":"https://teams.microsoft.com/l/message/19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype/1762434544840?groupId=45500773-64be-4e45-9aeb-0922cdb2f616&amp;tenantId=635aa01e-f19d-49ec-8aed-4b2e4312a627&amp;createdTime=1762434544840&amp;parentMessageId=1762434544840","policyViolation":null,"eventDetail":null,"from":{"application":null,"device":null,"user":{"@odata.type":"#microsoft.graph.teamworkUserIdentity","id":"81330d43-ae3b-4bb1-b698-4adacf0e5bca","displayName":"Michael Ringholm Sundgaard","userIdentityType":"aadUser","tenantId":"635aa01e-f19d-49ec-8aed-4b2e4312a627"}},"body":{"contentType":"html","content":"<p>PR ligger klar i GitHub.</p>","plainTextContent":"PR ligger klar i GitHub."},"channelIdentity":{"teamId":"45500773-64be-4e45-9aeb-0922cdb2f616","channelId":"19:3a3f2ddfdac14235bd81c8d7cc642cd2@thread.skype"},"attachments":[],"mentions":[],"reactions":[],"messageLink":"https://teams.microsoft.com/l/message/19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype/1762434544840?groupId=45500773-64be-4e45-9aeb-0922cdb2f616&amp;tenantId=635aa01e-f19d-49ec-8aed-4b2e4312a627&amp;createdTime=1762434544840&amp;parentMessageId=1762434544840","threadType":"channel","teamId":"45500773-64be-4e45-9aeb-0922cdb2f616","channelId":"19:3a3f2ddfdac14235bd81c8d7cc642cd2@thread.skype"}}]
+[
+  {
+    "statusCode": 200,
+    "headers": {
+      "Transfer-Encoding": "chunked",
+      "Vary": "Accept-Encoding",
+      "Strict-Transport-Security": "max-age=31536000",
+      "request-id": "02fdd9b6-0c25-440c-8e3b-cf4b492e5801",
+      "client-request-id": "02fdd9b6-0c25-440c-8e3b-cf4b492e5801",
+      "x-ms-ags-diagnostic": "{\"ServerInfo\":{\"DataCenter\":\"West Europe\",\"Slice\":\"E\",\"Ring\":\"5\",\"ScaleUnit\":\"001\",\"RoleInstance\":\"AM4PEPF00068B5A\"}}",
+      "OData-Version": "4.0",
+      "x-ms-environment-id": "default-635aa01e-f19d-49ec-8aed-4b2e4312a627",
+      "x-ms-tenant-id": "635aa01e-f19d-49ec-8aed-4b2e4312a627",
+      "x-ms-dlp-re": "-|-",
+      "x-ms-dlp-gu": "-|-",
+      "x-ms-dlp-ef": "-|-/-|-|-",
+      "x-ms-mip-sl": "-|-|-|-",
+      "x-ms-au-creator-id": "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+      "Timing-Allow-Origin": "*",
+      "x-ms-apihub-cached-response": "true",
+      "x-ms-apihub-obo": "false",
+      "Date": "Thu, 06 Nov 2025 13:09:04 GMT",
+      "Content-Type": "application/json",
+      "Content-Length": "2043"
+    },
+    "body": {
+      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#teams('45500773-64be-4e45-9aeb-0922cdb2f616')/channels('19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype')/messages/$entity",
+      "id": "1762434544840",
+      "replyToId": "1762434544840",
+      "etag": "1762434544840",
+      "messageType": "message",
+      "createdDateTime": "2025-11-06T13:09:04.84Z",
+      "lastModifiedDateTime": "2025-11-06T13:09:04.84Z",
+      "lastEditedDateTime": null,
+      "deletedDateTime": null,
+      "subject": null,
+      "summary": null,
+      "chatId": null,
+      "importance": "normal",
+      "locale": "en-us",
+      "webUrl": "https://teams.microsoft.com/l/message/19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype/1762434544840?groupId=45500773-64be-4e45-9aeb-0922cdb2f616&amp;tenantId=635aa01e-f19d-49ec-8aed-4b2e4312a627&amp;createdTime=1762434544840&amp;parentMessageId=1762434544840",
+      "policyViolation": null,
+      "eventDetail": null,
+      "from": {
+        "application": null,
+        "device": null,
+        "user": {
+          "@odata.type": "#microsoft.graph.teamworkUserIdentity",
+          "id": "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+          "displayName": "Michael Ringholm Sundgaard",
+          "userIdentityType": "aadUser",
+          "tenantId": "635aa01e-f19d-49ec-8aed-4b2e4312a627"
+        }
+      },
+      "body": {
+        "contentType": "html",
+        "content": "<p>PR ligger klar i GitHub.</p>",
+        "plainTextContent": "PR ligger klar i GitHub."
+      },
+      "channelIdentity": {
+        "teamId": "45500773-64be-4e45-9aeb-0922cdb2f616",
+        "channelId": "19:3a3f2ddfdac14235bd81c8d7cc642cd2@thread.skype"
+      },
+      "attachments": [],
+      "mentions": [],
+      "reactions": [],
+      "messageLink": "https://teams.microsoft.com/l/message/19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype/1762434544840?groupId=45500773-64be-4e45-9aeb-0922cdb2f616&amp;tenantId=635aa01e-f19d-49ec-8aed-4b2e4312a627&amp;createdTime=1762434544840&amp;parentMessageId=1762434544840",
+      "threadType": "channel",
+      "teamId": "45500773-64be-4e45-9aeb-0922cdb2f616",
+      "channelId": "19:3a3f2ddfdac14235bd81c8d7cc642cd2@thread.skype"
+    }
+  }
+]
