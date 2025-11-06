@@ -225,8 +225,10 @@ Before generating scripts:
 
 - **Domain:** @solita.dk
 - **Repository:** sundgaard-solita/ai-demo
-- **Teams Tenant:** 635aa01e-f19d-49ec-8aed-4b2e4312a627
-- **Team ID:** 45500773-64be-4e45-9aeb-0922cdb2f616
+- **Teams Tenant ID:** Available in message metadata (extract per request)
+- **Team ID:** Available in message metadata (extract per request)
+
+*Note: Specific tenant and team IDs are extracted from each Teams message and stored in the request folder's README.md for that specific request. Do not hardcode these values here as they may vary by team or environment.*
 
 ---
 

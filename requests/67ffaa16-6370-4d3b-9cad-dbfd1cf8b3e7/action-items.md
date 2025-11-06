@@ -88,4 +88,4 @@ All actions are manual review tasks performed in GitHub's web interface.
 ## Related Resources
 
 - **Teams Message Link:** [View Original Message](https://teams.microsoft.com/l/message/19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype/1762434256848?groupId=45500773-64be-4e45-9aeb-0922cdb2f616&tenantId=635aa01e-f19d-49ec-8aed-4b2e4312a627&createdTime=1762434256848&parentMessageId=1762434256848)
-- **Repository:** sundgaard-solita/ai-demo (based on context)
+- **Repository:** Check GitHub for the specific repository and PR referenced in the original message
