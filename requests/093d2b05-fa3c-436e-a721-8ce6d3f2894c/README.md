@@ -3,6 +3,12 @@
 ## Summary
 Michael Ringholm Sundgaard has notified that a pull request is ready for review in GitHub.
 
+## Files in this Directory
+- `README.md` - This file, containing the complete request documentation
+- `raw-input.json` - The original Microsoft Teams API JSON response (single-line format)
+- `formatted-input.json` - The same data formatted for readability
+- `NOTES.md` - Processing notes and workflow documentation
+
 ## Request Details
 
 ### Source Information
