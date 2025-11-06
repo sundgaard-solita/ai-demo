@@ -20,8 +20,9 @@ TENANT_ID="635aa01e-f19d-49ec-8aed-4b2e4312a627"
 find_open_prs() {
     echo "🔍 Searching for open PRs in ${GITHUB_ORG}/${GITHUB_REPO}..."
     
-    if [ "$GITHUB_TOKEN" = "YOUR_GITHUB_PAT_TOKEN" ]; then
-        echo "⚠️  GITHUB_TOKEN not set. Please configure your Personal Access Token."
+    # Check if token is set and not the default placeholder (without exposing the placeholder)
+    if [ -z "$GITHUB_TOKEN" ] || [ ${#GITHUB_TOKEN} -lt 20 ]; then
+        echo "⚠️  GITHUB_TOKEN not set or invalid. Please configure your Personal Access Token."
         echo "   export GITHUB_TOKEN=your_token_here"
         exit 1
     fi
@@ -51,7 +52,8 @@ assign_pr_reviewers() {
 notify_teams() {
     local MESSAGE=$1
     
-    if [ "$TEAMS_WEBHOOK_URL" = "YOUR_TEAMS_WEBHOOK_URL" ]; then
+    # Check if webhook URL is configured (without exposing the placeholder)
+    if [ -z "$TEAMS_WEBHOOK_URL" ] || [ ${#TEAMS_WEBHOOK_URL} -lt 20 ]; then
         echo "⚠️  TEAMS_WEBHOOK_URL not set. Skipping Teams notification."
         return 0
     fi

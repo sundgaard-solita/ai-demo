@@ -28,8 +28,9 @@ update_github_issue() {
     
     echo "📝 Updating GitHub issue #${ISSUE_NUM}..."
     
-    if [ "$GITHUB_TOKEN" = "YOUR_GITHUB_PAT_TOKEN" ]; then
-        echo "⚠️  GITHUB_TOKEN not set. Please configure your Personal Access Token."
+    # Check if token is set and not the default placeholder (without exposing the placeholder)
+    if [ -z "$GITHUB_TOKEN" ] || [ ${#GITHUB_TOKEN} -lt 20 ]; then
+        echo "⚠️  GITHUB_TOKEN not set or invalid. Please configure your Personal Access Token."
         echo "   export GITHUB_TOKEN=your_token_here"
         echo ""
         echo "To update manually, use:"
