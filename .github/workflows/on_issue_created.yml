@@ -1,16 +1,63 @@
-name: Assign Copilot on New Issue
+name: Process and Assign Issue
 
 on:
   issues:
     types: [opened]
 
 permissions:
-  issues: write   
+  issues: write
+  contents: read
 
 jobs:
-  assign-copilot:
+  process-issue:
     runs-on: ubuntu-latest
     steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔍 Check if issue contains Teams message
+        id: check_teams
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Save issue body to file
+          printf '%s' "$ISSUE_BODY" > issue_body.txt
+          
+          # Process with Python script
+          python3 process_teams_message.py "$ISSUE_BODY" > result.json
+          
+          # Check if it's a Teams message
+          IS_TEAMS=$(jq -r '.is_teams_message' result.json)
+          echo "is_teams_message=$IS_TEAMS" >> $GITHUB_OUTPUT
+          
+          if [ "$IS_TEAMS" = "true" ]; then
+            echo "✅ Detected Teams message format"
+            jq '.' result.json
+          else
+            echo "ℹ️  Not a Teams message - skipping processing"
+          fi
+
+      - name: 📝 Update issue with processed content
+        if: steps.check_teams.outputs.is_teams_message == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Extract processed title and description
+          TITLE=$(jq -r '.title' result.json)
+          DESCRIPTION=$(jq -r '.description' result.json)
+          
+          echo "Updating issue with:"
+          echo "Title: $TITLE"
+          echo "Description: $DESCRIPTION"
+          
+          # Update the issue
+          gh api --method PATCH \
+            repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+            -f title="$TITLE" \
+            -f body="$DESCRIPTION"
+          
+          echo "✅ Issue updated successfully"
+
       - name: 🤖 Assign Copilot agent to issue
         env:
           GH_TOKEN: ${{ secrets.GH_OAUTH_TEMP_LOGIN_SECRET }}
@@ -18,15 +65,19 @@ jobs:
           echo "Assigning Copilot to issue #${{ github.event.issue.number }}..."
           gh issue edit ${{ github.event.issue.number }} \
             --repo "${{ github.repository }}" \
-            --add-assignee "Copilot (AI)"
+            --add-assignee "Copilot (AI)" || echo "⚠️  Could not assign Copilot - secret may not be configured"
 
-      - name: 💬 Notify Teams about Copilot result
+      - name: 💬 Notify Teams about result
         if: always()
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         run: |
-          echo "Sending Teams notification..."
-          curl -X POST -H "Content-Type: application/json" \
-              -d "{\"text\":\"🤖 Copilot finished issue #${{ github.event.issue.number || 'N/A' }} in ${{ github.repository }}\"}" \
-              "$TEAMS_WEBHOOK_URL"
+          if [ -n "$TEAMS_WEBHOOK_URL" ]; then
+            echo "Sending Teams notification..."
+            curl -X POST -H "Content-Type: application/json" \
+                -d "{\"text\":\"🤖 Copilot processed issue #${{ github.event.issue.number || 'N/A' }} in ${{ github.repository }}\"}" \
+                "$TEAMS_WEBHOOK_URL" || echo "⚠️  Could not send Teams notification"
+          else
+            echo "ℹ️  No Teams webhook configured - skipping notification"
+          fi
 
