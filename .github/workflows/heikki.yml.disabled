@@ -1,0 +1,142 @@
+Workflow filename: Jira Ticket Automation
+
+on:
+  repository_dispatch:
+    types:
+      - jira_ticket_created
+  workflow_dispatch:
+    inputs:
+      issueKey:
+        description: "Issue key (e.g. CCTF-123)"
+        required: false
+      issueTitle:
+        description: "Title to use when manually triggering"
+        required: false
+      issueDescription:
+        description: "Description/body for manual runs"
+        required: false
+      priority:
+        description: "Priority label"
+        required: false
+      creator:
+        description: "Issue reporter"
+        required: false
+      url:
+        description: "Jira ticket URL"
+        required: false
+      automationHint:
+        description: "Set to skip to bypass automation"
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+
+jobs:
+  automate:
+    name: Automate Jira Ticket
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Step 1: Read inputs
+      - name: Parse inputs
+        id: parse
+        env:
+          CLIENT_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+          MANUAL_INPUTS: ${{ toJson(inputs) }}
+        run: python .github/scripts/parse-inputs.py
+
+      # Step 2: Install tools
+      - name: Install tools
+        run: bash .github/scripts/install-tools.sh
+
+      # Step 3: Create task and wait REPLACE WITH PR CREATION
+      - name: Create agent task
+        id: agent
+        env:
+          GH_OAUTH_LOGIN_SECRET: ${{ secrets.GH_OAUTH_LOGIN_SECRET }}
+          ISSUE_KEY: ${{ steps.parse.outputs.issue_key }}
+          ISSUE_TITLE: ${{ steps.parse.outputs.issue_title }}
+          ISSUE_DESCRIPTION: ${{ steps.parse.outputs.issue_description }}
+          REPOSITORY: ${{ github.repository }}
+        run: bash .github/scripts/create-agent-task.sh
+
+      # Step 4: Send Jira comment
+      - name: Send Jira comment
+        if: always()
+        env:
+          ISSUE_KEY: ${{ steps.parse.outputs.issue_key }}
+          WEBHOOK_URL: ${{ secrets.JIRA_COMMENT_WEBHOOK_URL }}
+          WEBHOOK_SECRET: ${{ secrets.JIRA_COMMENT_WEBHOOK_SECRET }}
+          AGENT_STATUS: ${{ steps.agent.outputs.status }}
+          AGENT_PR_URL: ${{ steps.agent.outputs.pr_url }}
+          AGENT_SUMMARY: ${{ steps.agent.outputs.summary }}
+        run: bash .github/scripts/send-jira-comment.sh
+11:02
+#!/usr/bin/env python3
+"""Parse Jira webhook or manual inputs into normalized workflow outputs."""
+import json
+import os
+import re
+import sys
+
+
+def emit(name, value):
+    """Emit GitHub Actions output."""
+    if value is None:
+        value = ""
+    with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+        if "\n" in str(value):
+            f.write(f"{name}<<EOFDELIM\n{value}\nEOFDELIM\n")
+        else:
+            f.write(f"{name}={value}\n")
+
+
+def main():
+    client_payload = json.loads(os.environ.get("CLIENT_PAYLOAD", "{}"))
+    manual_inputs = json.loads(os.environ.get("MANUAL_INPUTS", "{}"))
+    
+    if not isinstance(client_payload, dict):
+        client_payload = {}
+    if not isinstance(manual_inputs, dict):
+        manual_inputs = {}
+
+    # Extract fields
+    issue_key = (manual_inputs.get("issueKey") or client_payload.get("issueKey", "")).strip().upper()
+    issue_title = (manual_inputs.get("issueTitle") or client_payload.get("issueTitle", "")).strip()
+    issue_description = (
+        manual_inputs.get("issueDescription") or client_payload.get("issueDescription") or
+        manual_inputs.get("description") or client_payload.get("description") or
+        manual_inputs.get("body") or client_payload.get("body") or ""
+    ).strip()
+    issue_url = (manual_inputs.get("url") or client_payload.get("url", "")).strip()
+    priority = (manual_inputs.get("priority") or client_payload.get("priority", "Unspecified")).strip()
+    creator = (manual_inputs.get("creator") or client_payload.get("creator", "Unknown")).strip()
+
+    # Validate required fields
+    if not issue_key or not issue_title or not issue_url:
+        print(f"ERROR: Missing required fields", file=sys.stderr)
+        sys.exit(1)
+
+    if not re.match(r"^[A-Z0-9]+-[0-9]+$", issue_key):
+        print(f"ERROR: Invalid issue key format: {issue_key}", file=sys.stderr)
+        sys.exit(1)
+
+    # Output
+    emit("issue_key", issue_key)
+    emit("issue_title", issue_title)
+    emit("issue_description", issue_description)
+    emit("issue_url", issue_url)
+    emit("priority", priority)
+    emit("creator", creator)
+
+    print(f"Issue: {issue_key} - {issue_title}")
+
+
+if __name__ == "__main__":
+    main()
