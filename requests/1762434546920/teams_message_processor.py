@@ -6,7 +6,7 @@ Extracts and processes Teams messages from GitHub issues
 
 import json
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -78,7 +78,7 @@ def create_request_structure(message_data, base_path='requests'):
         'type': 'teams-message',
         'status': 'processed',
         'createdAt': message_data.get('createdDateTime'),
-        'processedAt': datetime.utcnow().isoformat() + 'Z',
+        'processedAt': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         'message': message_data.get('message'),
         'sender': {
             'name': message_data.get('sender'),
@@ -119,7 +119,7 @@ def create_request_structure(message_data, base_path='requests'):
 
 ---
 
-_Generated at {datetime.utcnow().isoformat()}Z_
+_Generated at {datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')}_
 """
     
     readme_file = request_dir / 'README.md'
