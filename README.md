@@ -41,36 +41,74 @@ When a new issue is created in this repository, a GitHub Actions workflow automa
 
 The repository contains multiple workflow options:
 
-### 1. Main Workflow (`on_issue_created.yml`)
-This workflow attempts to use the GitHub Copilot Models API:
+### 1. Teams Message Processor (`process_teams_issue.yml`) - **RECOMMENDED**
+This is the main workflow for processing Teams messages:
 - Triggers automatically on issue creation (`issues.opened` event)
-- Uses the GitHub Copilot Models API endpoint: `/orgs/{org}/copilot/models/{model}/inference`
-- Requires `issues: write`, `contents: read`, and `models: read` permissions
-- **Note:** This requires GitHub Copilot access for the organization
+- Uses a Python script to parse Teams webhook JSON
+- Extracts message content, sender, and timestamp
+- Formats issues with clean titles and markdown descriptions
+- Adds "teams-message" label for easy filtering
+- **No external API dependencies** - works reliably out of the box
+- Requires only `issues: write` and `contents: read` permissions
+
+### 2. Copilot Assignment (`on_issue_created.yml`)
+This workflow assigns GitHub Copilot to new issues:
+- Triggers automatically on issue creation
+- Assigns the issue to Copilot for AI-assisted processing
+- Sends notifications to Teams when complete
+- Requires `issues: write` permission
+
+### 3. Advanced Copilot Models API (`on_issue_created_new.yml.disabled`) - DISABLED
+A more advanced workflow using GitHub Copilot Models API:
+- Currently disabled (requires organizational Copilot access)
+- Uses AI to process and format issue content
+- Can be enabled if your organization has Copilot Models API access
+- See troubleshooting section below if you want to use this
 
 **Known Issue:** If you see a 404 error, it means:
 - GitHub Copilot Models may not be enabled for your organization
 - The repository may not have access to Copilot Models  
 - Contact your GitHub organization administrator to enable GitHub Copilot
 
-### 2. Simple Fallback Workflow (`process_issue_simple.yml`)
-A manual workflow that doesn't require Copilot:
-- Runs manually via workflow_dispatch
-- Extracts and formats Teams messages from JSON
-- Provides basic formatting without AI processing
-- Use this as a fallback if Copilot Models API is not available
-
-To use the simple workflow:
-1. Go to Actions → Process Issue - Simple Fallback
-2. Click "Run workflow"
-3. Enter the issue number
-4. The workflow will reformat the issue content
-
-### 3. Test Workflow (`test_models_api.yml`)  
-A diagnostic workflow to test Copilot Models API access:
+### 4. Test Workflow (`copilot_hello.yml`)  
+A diagnostic workflow to test Copilot API access:
 - Run manually to check if the API is accessible
 - Helps diagnose 404 errors
 - Useful for troubleshooting organizational access
+
+## How It Works
+
+The `process_teams_issue.yml` workflow:
+
+1. **Detects Teams Messages**: When an issue is created, checks if it contains Teams webhook JSON
+2. **Extracts Information**: Parses the JSON to extract:
+   - Sender name and information
+   - Message timestamp
+   - Plain text content
+   - Teams message link
+3. **Formats Output**: Creates a clean markdown description with:
+   - Summary section
+   - Message details (sender, date, channel)
+   - Original message (quoted)
+   - Link to view in Teams
+   - Action items (if applicable)
+4. **Updates Issue**: Automatically updates the issue title and body
+5. **Adds Label**: Tags the issue with "teams-message" for easy filtering
+
+## Processing Script
+
+The `process_teams_issue.py` script handles the parsing and formatting:
+- Takes raw issue body as input
+- Detects if it's a Teams message JSON
+- Extracts relevant fields
+- Returns formatted title and description as JSON
+- Can be run standalone for testing
+
+**Example usage:**
+```bash
+python3 process_teams_issue.py '<raw_json_content>'
+```
+
 
 ## Context
 
