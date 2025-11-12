@@ -1,0 +1,17 @@
+{
+  "request_id": "e193b52e-b0fc-43a4-9c0b-519cd533b7ca",
+  "message_id": "1762434322514",
+  "sender": {
+    "name": "Michael Ringholm Sundgaard",
+    "id": "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+    "type": "aadUser"
+  },
+  "timestamp": "2025-11-06T13:05:22.514Z",
+  "message": {
+    "original": "PR ligger klar i GitHub.",
+    "language": "da",
+    "translation": "PR is ready in GitHub."
+  },
+  "platform": "Microsoft Teams",
+  "action_type": "PR_REVIEW_REQUEST"
+}
