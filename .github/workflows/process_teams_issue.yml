@@ -1,0 +1,123 @@
+name: Process Teams Issue Automatically
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  process-teams-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract and format Teams message
+        id: extract
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          # Configuration
+          MAX_TITLE_LENGTH=50
+          
+          # Try to parse the issue body as JSON and validate structure
+          # Teams messages come in the format: [{"body":{"body":{"plainTextContent":"..."},"from":{"user":{"displayName":"..."}},"createdDateTime":"..."}}]
+          
+          # First, validate that the input is valid JSON with the expected structure
+          if ! echo "$ISSUE_BODY" | jq -e '.[0].body.body.plainTextContent' > /dev/null 2>&1; then
+            echo "ℹ️  Not a Teams message format, skipping processing"
+            # Use GitHub Actions multiline output format
+            {
+              echo "DESC<<EODESC"
+              echo ""
+              echo "EODESC"
+              echo "TITLE<<EOTITLE"
+              echo ""
+              echo "EOTITLE"
+              echo "SHOULD_UPDATE<<EOUPDATE"
+              echo "false"
+              echo "EOUPDATE"
+            } >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "✅ Detected Teams message JSON format"
+          
+          # Parse once and extract all needed fields
+          TEAMS_DATA=$(echo "$ISSUE_BODY" | jq -r '.[0].body')
+          PLAIN_TEXT=$(echo "$TEAMS_DATA" | jq -r '.body.plainTextContent // empty')
+          FROM=$(echo "$TEAMS_DATA" | jq -r '.from.user.displayName // "Unknown User"')
+          DATE=$(echo "$TEAMS_DATA" | jq -r '.createdDateTime // ""')
+          
+          # Validate we have the essential data
+          if [ -z "$PLAIN_TEXT" ] || [ "$PLAIN_TEXT" == "null" ]; then
+            echo "⚠️  Warning: Could not extract text content from Teams message"
+            echo "Skipping processing"
+            {
+              echo "DESC<<EODESC"
+              echo ""
+              echo "EODESC"
+              echo "TITLE<<EOTITLE"
+              echo ""
+              echo "EOTITLE"
+              echo "SHOULD_UPDATE<<EOUPDATE"
+              echo "false"
+              echo "EOUPDATE"
+            } >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Create formatted description
+          DESC="## Summary
+${PLAIN_TEXT}
+
+## Message Details
+
+**From:** ${FROM}
+**Date:** ${DATE}
+
+---
+
+*This issue was automatically created from a Microsoft Teams message.*"
+          
+          # Extract a title from the content (first line or first MAX_TITLE_LENGTH chars)
+          TITLE=$(echo "$PLAIN_TEXT" | head -1 | cut -c1-${MAX_TITLE_LENGTH})
+          if [ ${#TITLE} -eq ${MAX_TITLE_LENGTH} ]; then
+            TITLE="${TITLE}..."
+          fi
+          
+          echo "✅ Extracted information:"
+          echo "  Title: $TITLE"
+          echo "  From: $FROM"
+          echo "  Date: $DATE"
+          echo "  Content: $PLAIN_TEXT"
+          
+          # Use GitHub Actions multiline output format
+          {
+            echo "DESC<<EODESC"
+            echo "$DESC"
+            echo "EODESC"
+            echo "TITLE<<EOTITLE"
+            echo "$TITLE"
+            echo "EOTITLE"
+            echo "SHOULD_UPDATE<<EOUPDATE"
+            if [ -n "$DESC" ] && [ -n "$TITLE" ]; then
+              echo "true"
+            else
+              echo "false"
+            fi
+            echo "EOUPDATE"
+          } >> $GITHUB_OUTPUT
+      
+      - name: Update issue
+        if: steps.extract.outputs.SHOULD_UPDATE == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PATCH \
+            repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+            -f title="${{ steps.extract.outputs.TITLE }}" \
+            -f body="${{ steps.extract.outputs.DESC }}"
+          
+          echo "✅ Issue ${{ github.event.issue.number }} has been reformatted"

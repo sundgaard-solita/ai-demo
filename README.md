@@ -6,42 +6,73 @@ This repository contains GitHub Copilot automation tools for Solita Denmark.
 
 ### Automated Issue Processing from Teams Messages
 
-When a new issue is created in this repository, a GitHub Actions workflow automatically processes the content using the GitHub Models API.
+When a new issue is created in this repository, a GitHub Actions workflow automatically processes the content.
 
 **What it does:**
-- Converts rough input (JSON, XML, YAML, or plain text from MS Teams) into clean, human-readable markdown
-- Extracts a clear, descriptive title
-- Creates a well-formatted description
-- Identifies and lists action items
+- Detects Microsoft Teams message JSON format
+- Extracts the plain text message, sender name, and timestamp
+- Reformats the issue with a clear title and structured description
+- Preserves the original message metadata
 
 **How it works:**
-1. When an issue is created (e.g., from a Teams webhook), the workflow triggers
-2. The GitHub Models API processes the issue body using AI (GPT-4o model)
-3. The issue is automatically updated with:
-   - A clean, descriptive title
-   - Well-formatted markdown description
-   - Extracted action items (if any)
+1. When an issue is created (e.g., from a Teams webhook), the `process_teams_issue.yml` workflow triggers
+2. The workflow detects if the issue body contains Teams message JSON
+3. If detected, it extracts the message details and updates the issue with:
+   - A clean, descriptive title (from the message content)
+   - Well-formatted markdown description with sender and timestamp
+   - The original message content in a clear summary section
 
 **Example:**
 
 **Before** (raw Teams message JSON):
 ```json
-[{"body":{"plainTextContent":"Allan wrote add mrs to BDK team"}}]
+[{"body":{"body":{"plainTextContent":"test 789"},"from":{"user":{"displayName":"Michael Ringholm Sundgaard"}},"createdDateTime":"2025-11-02T16:35:47.503Z"}}]
 ```
 
 **After** (processed issue):
-- **Title:** Add MRS to BDK team
-- **Description:** Well-formatted markdown with context and details
-- **Action Items:** 
-  - Add MRS to the BDK team
-  - Verify team permissions
-  - Notify requester
+- **Title:** test 789
+- **Description:** 
+  ```markdown
+  ## Summary
+  test 789
+
+  ## Message Details
+  **From:** Michael Ringholm Sundgaard
+  **Date:** 2025-11-02T16:35:47.503Z
+  
+  ---
+  *This issue was automatically created from a Microsoft Teams message.*
+  ```
 
 ## Workflow Configuration
 
 The repository contains multiple workflow options:
 
-### 1. Main Workflow (`on_issue_created.yml`)
+### 1. Automated Teams Issue Processing (`process_teams_issue.yml`) ⭐ Recommended
+This is the **primary workflow** for automatic issue processing:
+- **Triggers automatically** on issue creation (`issues.opened` event)
+- Detects Microsoft Teams message JSON format
+- Extracts message content, sender name, and timestamp
+- Reformats the issue with a clear title and well-structured description
+- **No AI/Copilot required** - works with static parsing
+- Skips processing for regular (non-Teams) issues
+
+**What it does:**
+When you create an issue containing Teams message JSON, it automatically:
+1. Extracts the plain text message content
+2. Identifies the sender and timestamp
+3. Updates the issue with a clear title (from message content)
+4. Formats the description with a summary and metadata
+
+**Example:**
+```json
+[{"body":{"body":{"plainTextContent":"test 789"},"from":{"user":{"displayName":"Michael"}},"createdDateTime":"2025-11-02T16:35:47.503Z"}}]
+```
+Becomes:
+- **Title:** test 789
+- **Description:** Formatted markdown with sender info and timestamp
+
+### 2. AI-Powered Workflow (`on_issue_created.yml`)
 This workflow attempts to use the GitHub Copilot Models API:
 - Triggers automatically on issue creation (`issues.opened` event)
 - Uses the GitHub Copilot Models API endpoint: `/orgs/{org}/copilot/models/{model}/inference`
@@ -53,12 +84,12 @@ This workflow attempts to use the GitHub Copilot Models API:
 - The repository may not have access to Copilot Models  
 - Contact your GitHub organization administrator to enable GitHub Copilot
 
-### 2. Simple Fallback Workflow (`process_issue_simple.yml`)
+### 3. Simple Fallback Workflow (`process_issue_simple.yml`)
 A manual workflow that doesn't require Copilot:
 - Runs manually via workflow_dispatch
 - Extracts and formats Teams messages from JSON
 - Provides basic formatting without AI processing
-- Use this as a fallback if Copilot Models API is not available
+- Use this for reprocessing existing issues
 
 To use the simple workflow:
 1. Go to Actions → Process Issue - Simple Fallback
@@ -66,7 +97,7 @@ To use the simple workflow:
 3. Enter the issue number
 4. The workflow will reformat the issue content
 
-### 3. Test Workflow (`test_models_api.yml`)  
+### 4. Test Workflow (`test_models_api.yml`)  
 A diagnostic workflow to test Copilot Models API access:
 - Run manually to check if the API is accessible
 - Helps diagnose 404 errors
@@ -81,6 +112,20 @@ This automation is designed for IT employees at Solita Denmark, working with:
 - GitHub
 
 Security and ISO-27001 compliance are maintained with proper access controls and least privilege principles.
+
+## Important Notes
+
+### Multiple Workflows on Issue Creation
+Currently, **two workflows** trigger automatically when a new issue is created:
+1. `process_teams_issue.yml` - Static Teams message processing (recommended)
+2. `on_issue_created.yml` - AI-powered processing using Copilot Models API
+
+Both workflows will attempt to update the same issue. You may want to:
+- **Option 1 (Recommended):** Disable `on_issue_created.yml` if you don't have Copilot Models API access or prefer static processing
+- **Option 2:** Keep both and let whichever completes first update the issue
+- **Option 3:** Modify one workflow to check if the issue has already been processed
+
+To disable a workflow, rename it with `.disabled` extension or remove the `on: issues: types: [opened]` trigger.
 
 ## Troubleshooting
 
