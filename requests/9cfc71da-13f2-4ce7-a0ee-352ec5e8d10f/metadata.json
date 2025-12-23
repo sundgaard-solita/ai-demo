@@ -1,0 +1,42 @@
+{
+  "requestId": "9cfc71da-13f2-4ce7-a0ee-352ec5e8d10f",
+  "messageId": "1762434090259",
+  "timestamp": "2025-11-06T13:01:30.259Z",
+  "source": "microsoft-teams",
+  "sender": {
+    "id": "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+    "displayName": "Michael Ringholm Sundgaard",
+    "userIdentityType": "aadUser",
+    "tenantId": "635aa01e-f19d-49ec-8aed-4b2e4312a627"
+  },
+  "message": {
+    "original": "PR ligger klar i GitHub.",
+    "translated": "PR is ready in GitHub",
+    "language": "da",
+    "contentType": "html"
+  },
+  "teams": {
+    "teamId": "45500773-64be-4e45-9aeb-0922cdb2f616",
+    "channelId": "19:3a3f2ddfdac14235bd81c8d7cc642cd2@thread.skype",
+    "messageLink": "https://teams.microsoft.com/l/message/19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype/1762434090259?groupId=45500773-64be-4e45-9aeb-0922cdb2f616&tenantId=635aa01e-f19d-49ec-8aed-4b2e4312a627&createdTime=1762434090259&parentMessageId=1762434090259"
+  },
+  "actionItems": [
+    {
+      "description": "Review the pull request mentioned by Michael Ringholm Sundgaard",
+      "status": "pending",
+      "priority": "normal"
+    },
+    {
+      "description": "Verify PR status in GitHub",
+      "status": "pending",
+      "priority": "normal"
+    },
+    {
+      "description": "Provide feedback or approve the PR",
+      "status": "pending",
+      "priority": "normal"
+    }
+  ],
+  "processedAt": "2025-11-06T13:02:29.518Z",
+  "processedBy": "github-copilot-automation"
+}
