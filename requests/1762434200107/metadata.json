@@ -1,0 +1,59 @@
+{
+  "request_id": "1762434200107",
+  "http_request_id": "74cee37c-e6fb-4f23-95da-c9e9f8e20992",
+  "timestamp": "2025-11-06T13:03:20.107Z",
+  "source": "microsoft_teams",
+  "message": {
+    "original": "PR ligger klar i GitHub.",
+    "translated": "PR is ready in GitHub.",
+    "language": "da",
+    "content_type": "html"
+  },
+  "sender": {
+    "display_name": "Michael Ringholm Sundgaard",
+    "user_id": "81330d43-ae3b-4bb1-b698-4adacf0e5bca",
+    "identity_type": "aadUser"
+  },
+  "teams_context": {
+    "tenant_id": "635aa01e-f19d-49ec-8aed-4b2e4312a627",
+    "team_id": "45500773-64be-4e45-9aeb-0922cdb2f616",
+    "team_name": "Solita Denmark IT Team",
+    "channel_id": "19:3a3f2ddfdac14235bd81c8d7cc642cd2@thread.skype",
+    "message_link": "https://teams.microsoft.com/l/message/19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype/1762434200107?groupId=45500773-64be-4e45-9aeb-0922cdb2f616&tenantId=635aa01e-f19d-49ec-8aed-4b2e4312a627&createdTime=1762434200107&parentMessageId=1762434200107",
+    "web_url": "https://teams.microsoft.com/l/message/19%3A3a3f2ddfdac14235bd81c8d7cc642cd2%40thread.skype/1762434200107?groupId=45500773-64be-4e45-9aeb-0922cdb2f616&tenantId=635aa01e-f19d-49ec-8aed-4b2e4312a627&createdTime=1762434200107&parentMessageId=1762434200107"
+  },
+  "categorization": {
+    "type": "notification",
+    "category": "pr_review_request",
+    "priority": "normal",
+    "scope": [
+      "github",
+      "code_review",
+      "pull_request"
+    ]
+  },
+  "action_items": [
+    "Review pull request in GitHub",
+    "Verify changes and provide feedback",
+    "Approve and merge if all checks pass"
+  ],
+  "automation": {
+    "scripts_created": [
+      "github-pr-review.sh",
+      "teams-notification.sh",
+      "security-compliance-check.sh"
+    ],
+    "documentation_created": [
+      "README.md",
+      "action-items.md",
+      "iac-scripts.md"
+    ]
+  },
+  "compliance": {
+    "iso_27001": true,
+    "security_review_required": true,
+    "least_privilege": true
+  },
+  "status": "processed",
+  "processed_date": "2025-11-06T13:17:00Z"
+}
